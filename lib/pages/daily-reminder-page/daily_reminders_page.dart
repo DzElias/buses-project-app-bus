@@ -1,5 +1,5 @@
 import 'package:bustracking/widgets/daily_reminder.dart';
-import 'package:bustracking/widgets/main_drawer.dart';
+import 'package:bustracking/commons/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -54,13 +54,12 @@ class DailyRemindersPage extends StatelessWidget {
                 busStopName: 'Ciudad nueva',
                 reminderDays: 'Lunes, Martes, Jueves, Sabado',
               ),
-             DailyReminder(
+              DailyReminder(
                 busName: 'Linea 270 Mburucuya Poty',
                 reminderTime: '2 min ',
                 busStopName: 'Ciudad nueva',
                 reminderDays: 'Lunes, Martes, Jueves, Sabado',
               ),
-              
             ],
           ),
         ));

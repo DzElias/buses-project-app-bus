@@ -1,19 +1,34 @@
+import 'package:bustracking/pages/bus-page/models/bus_page_arguments.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 class BusWidget extends StatelessWidget {
   final String busName;
-  final String busRoutes;
+ 
   final String time;
+  final String busId;
+   final LatLng busLocation;
+  final String linea;
+  final List<dynamic> paradas;
+ final  String primeraParada;
+  final String ultimaParada;
+  final String proximaParada;
+  final LatLng busStopLatLng;
 
-  const BusWidget({Key? key, required this.busName, required this.busRoutes, required this.time}) : super(key: key);
+  const BusWidget(
+      {Key? key,
+      required this.busName,
+      
+      required this.time, required this.busId, required this.busLocation, required this.linea, required this.paradas, required this.primeraParada, required this.ultimaParada, required this.proximaParada, required this.busStopLatLng})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: (){
-        Navigator.pushNamed(context, 'bus-page');
+      onTap: () {
+        Navigator.pushNamed(context, 'bus-page', arguments: BusPageArguments(busId, busLocation,busName, linea, paradas, primeraParada, ultimaParada, proximaParada, busStopLatLng));
       },
       child: Container(
-        margin: EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
             Row(
@@ -39,7 +54,7 @@ class BusWidget extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                     time,
+                      time,
                       style: TextStyle(color: Colors.black54),
                     ),
                     SizedBox(
@@ -50,18 +65,6 @@ class BusWidget extends StatelessWidget {
                 ),
               ],
             ),
-            Row(
-              children: [
-                SizedBox(
-                  width: 40,
-                ),
-                Text(
-                  busRoutes,
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black54),
-                ),
-              ],
-            )
           ],
         ),
       ),

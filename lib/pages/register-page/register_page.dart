@@ -1,8 +1,8 @@
-import 'package:bustracking/widgets/custom_button.dart';
-import 'package:bustracking/widgets/custom_input.dart';
-import 'package:bustracking/widgets/labels.dart';
-import 'package:bustracking/widgets/logo.dart';
-import 'package:bustracking/widgets/terms-and-conditions.dart';
+import 'package:bustracking/commons/widgets/custom_button.dart';
+import 'package:bustracking/commons/widgets/custom_input.dart';
+import 'package:bustracking/commons/widgets/labels.dart';
+import 'package:bustracking/commons/widgets/logo.dart';
+import 'package:bustracking/commons/widgets/terms-and-conditions.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatelessWidget {
@@ -10,17 +10,25 @@ class RegisterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     return Scaffold(
+    return Scaffold(
         backgroundColor: Color(0xffF2F2F2),
-        body: SafeArea(
-          child:  SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Container(
-              height: MediaQuery.of(context).size.height*0.9,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [Logo(pageName: 'Registro',), _Form(), const Labels(route: 'login', text:'¿Ya tiene una cuenta?', text2:'¡Ingrese ahora!'), TermsandContditions()],
-              ),
+        body: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 1,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Logo(
+                  pageName: 'Registro',
+                ),
+                _Form(),
+                const Labels(
+                    route: 'login',
+                    text: '¿Ya tiene una cuenta?',
+                    text2: '¡Ingrese ahora!'),
+                TermsandContditions()
+              ],
             ),
           ),
         ));
@@ -40,15 +48,14 @@ class ___FormState extends State<_Form> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(top: 40),
+      margin: EdgeInsets.only(top: 20),
       padding: EdgeInsets.symmetric(horizontal: 50),
       child: Column(
         children: [
-           CustomInput(
+          CustomInput(
             icon: Icons.perm_identity,
             placeHolder: 'Nombre completo',
             textController: nameCtrl,
-            
           ),
           CustomInput(
             icon: Icons.mail_outline,
@@ -62,16 +69,14 @@ class ___FormState extends State<_Form> {
             textController: passCtrl,
             isPassword: true,
           ),
-          
+
           Custom_button(
-            btnColor: Colors.blueAccent,
-            textColor: Colors.white,
-            text: 'Registrar',
-            onPressed: (){
-              Navigator.pushReplacementNamed(context, 'login');
-              
-            }
-          )
+              btnColor: Colors.blueAccent,
+              textColor: Colors.white,
+              text: 'Registrar',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, 'login');
+              })
 
           //TODO Crea boton
         ],

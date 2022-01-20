@@ -1,6 +1,8 @@
 import 'package:bustracking/main.dart';
-import 'package:bustracking/widgets/custom-card.dart';
-import 'package:bustracking/widgets/main_drawer.dart';
+import 'package:bustracking/pages/nearby-bus-stop-page/widgets/nearby_bus_stops_map.dart';
+import 'package:bustracking/commons/widgets/custom-appbar.dart';
+import 'package:bustracking/pages/nearby-bus-stop-page/widgets/custom-card.dart';
+import 'package:bustracking/commons/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,27 +15,28 @@ class _SearchBusState extends State<SearchBus> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
+      extendBodyBehindAppBar: true,
+        appBar: CustomAppBar(
           title: Text(
             'Buscar Buses',
             style: TextStyle(
                 fontSize: 17, color: Colors.black87, fontFamily: 'Betm-Medium', fontWeight: FontWeight.bold),
-          ),
-          elevation: 0.0,
-          backgroundColor: Colors.transparent,
-          systemOverlayStyle: SystemUiOverlayStyle(
-              statusBarIconBrightness: Brightness.dark,
-              statusBarColor: Colors.white),
-          iconTheme: IconThemeData(color: Colors.black),
-        ),
+          ),centerTitle: true,),
         drawer: MainDrawer(),
-        body: SafeArea(
-            child: Stack(
-              
-              children: [
-                Center(child: Text('Mapa'),),
-                Align(
+        body: Stack(
+          
+          children: [
+            
+            Center(child: Text('Mapa'),),
+            searchBusContainer(),
+          ],
+        ));
+  }
+
+  Container searchBusContainer() {
+    return Container(
+                margin: const EdgeInsets.only(top: 90),
+                child: Align(
                   alignment: Alignment.topCenter,
                   child: ElevatedButton(
                     onPressed: () {},
@@ -61,7 +64,6 @@ class _SearchBusState extends State<SearchBus> {
                     ),
                   ),
                 ),
-              ],
-            )));
+              );
   }
 }

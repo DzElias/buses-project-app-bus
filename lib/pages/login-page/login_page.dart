@@ -1,8 +1,8 @@
-import 'package:bustracking/widgets/custom_button.dart';
-import 'package:bustracking/widgets/custom_input.dart';
-import 'package:bustracking/widgets/labels.dart';
-import 'package:bustracking/widgets/logo.dart';
-import 'package:bustracking/widgets/terms-and-conditions.dart';
+import 'package:bustracking/commons/widgets/custom_button.dart';
+import 'package:bustracking/commons/widgets/custom_input.dart';
+import 'package:bustracking/commons/widgets/labels.dart';
+import 'package:bustracking/commons/widgets/logo.dart';
+import 'package:bustracking/commons/widgets/terms-and-conditions.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
@@ -16,7 +16,7 @@ class LoginPage extends StatelessWidget {
           child:  SingleChildScrollView(
             physics: BouncingScrollPhysics(),
             child: Container(
-              height: MediaQuery.of(context).size.height*0.9,
+              height: MediaQuery.of(context).size.height*1,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [Logo(pageName: 'Alla voy',), _Form(), Labels(route: 'register', text:'¿No tiene una cuenta?', text2:'¡Crea una ahora!'), TermsandContditions()],

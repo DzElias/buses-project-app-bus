@@ -1,4 +1,4 @@
-import 'package:bustracking/widgets/custom-appbar.dart';
+import 'package:bustracking/commons/widgets/custom-appbar.dart';
 import 'package:flutter/material.dart';
 
 
@@ -33,13 +33,13 @@ class AddDestinationPage extends StatelessWidget {
                 child: Column(
                   children: [
                     Row(
-                      children: [
-                        const Icon(
+                      children: const [
+                        Icon(
                           Icons.radio_button_on,
                           color: Colors.red,
                         ),
-                        const SizedBox(width: 10),
-                        const Text('Tu ubicacion ',
+                        SizedBox(width: 10),
+                        Text('Tu ubicacion ',
                             style: TextStyle(
                               color: Colors.black54,
                               fontFamily: 'Betm-Medium',
@@ -48,8 +48,8 @@ class AddDestinationPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Row(
-                      children: [
-                        const Icon(
+                      children: const [
+                        Icon(
                           Icons.more_vert,
                           color: Colors.black54,
                         ),
@@ -58,13 +58,13 @@ class AddDestinationPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Row(
-                      children: [
-                        const Icon(
+                      children: const [
+                        Icon(
                           Icons.location_pin,
                           color: Colors.blueAccent,
                         ),
-                        const SizedBox(width: 10),
-                        const Text('Elige el lugar de destino ',
+                        SizedBox(width: 10),
+                        Text('Elige el lugar de destino ',
                             style: TextStyle(
                               color: Colors.black54,
                               fontFamily: 'Betm-Medium',
@@ -125,26 +125,26 @@ class AddDestinationPage extends StatelessWidget {
                 children: [
                   Container(
                     margin: const EdgeInsets.symmetric( vertical: 10),
-                    child: Row(children: [
-                      const Icon(Icons.history),
-                      const SizedBox(width: 10,),
-                      const Text('Garden S.A. CDE, Av. San Blas'),
+                    child: Row(children: const [
+                      Icon(Icons.history),
+                      SizedBox(width: 10,),
+                      Text('Garden S.A. CDE, Av. San Blas'),
                     ]),
                   ),
                   Container(
                     margin: const EdgeInsets.symmetric( vertical: 10),
-                    child: Row(children: [
-                      const Icon(Icons.history),
-                      const SizedBox(width: 10,),
-                      const Text('Plaza City, Ruta 7'),
+                    child: Row(children: const [
+                      Icon(Icons.history),
+                      SizedBox(width: 10,),
+                      Text('Plaza City, Ruta 7'),
                     ]),
                   ),
                   Container(
                     margin: const EdgeInsets.symmetric( vertical: 10),
-                    child: Row(children: [
-                      const Icon(Icons.history),
-                      const SizedBox(width: 10,),
-                      const Text('Fortis, Av. Monseñor Rodriguez')
+                    child: Row(children: const [
+                      Icon(Icons.history),
+                      SizedBox(width: 10,),
+                      Text('Fortis, Av. Monseñor Rodriguez')
                     ]),
                   )
                 ],

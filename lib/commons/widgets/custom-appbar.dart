@@ -15,14 +15,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget{
   @override
   Widget build(BuildContext context) {
     return AppBar(
-          
           title: title,
           centerTitle: centerTitle,
           elevation: 0.0,
           backgroundColor: Colors.transparent,
           systemOverlayStyle: SystemUiOverlayStyle(
               statusBarIconBrightness: Brightness.dark,
-              statusBarColor: Colors.white),
+          ),
           iconTheme: IconThemeData(
             color: Colors.black,
           ),

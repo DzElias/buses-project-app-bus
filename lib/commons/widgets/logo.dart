@@ -12,19 +12,19 @@ class Logo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        margin: EdgeInsets.only(top: 50),
+        margin: const EdgeInsets.only(top: 50),
         width: 170,
         child: Column(
           // ignore: prefer_const_literals_to_create_immutables
           children: [
-            Image(image: AssetImage("assets/bus-logo.png")),
+            const Image(image: AssetImage("assets/images/bus.png")),
             // ignore: prefer_const_constructors
             SizedBox(
               height: 20,
             ),
             Text(
-              this.pageName,
-              style: TextStyle(fontSize: 25),
+              pageName,
+              style: const TextStyle(fontSize: 25),
             )
           ],
         ),

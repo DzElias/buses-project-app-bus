@@ -1,6 +1,6 @@
 // ignore_for_file: file_names
 
-import 'package:bustracking/widgets/custom-appbar.dart';
+import 'package:bustracking/commons/widgets/custom-appbar.dart';
 import 'package:bustracking/widgets/multiSelect.dart';
 
 import 'package:flutter/material.dart';
@@ -59,11 +59,10 @@ class _SetDailyReminderPageState extends State<SetDailyReminderPage> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   primary: Colors.blueAccent,
-                   shape: new RoundedRectangleBorder(
-          borderRadius: new BorderRadius.circular(0.0),
-        ),
+                  shape: new RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(0.0),
+                  ),
                 ),
-               
                 onPressed: () {},
                 child: Container(
                   padding: EdgeInsets.all(25),
