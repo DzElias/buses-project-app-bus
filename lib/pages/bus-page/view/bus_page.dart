@@ -1,20 +1,18 @@
+import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/widgets/my-location-marker.dart';
-import 'package:bustracking/helpers/cachedTileProvider.dart';
+import 'package:bustracking/commons/widgets/map.dart';
 import 'package:bustracking/pages/bus-page/models/bus_page_arguments.dart';
-import 'package:bustracking/pages/bus-stop-page/widgets/bus_stop_page_map.dart';
-import 'package:bustracking/pages/nearby-bus-stop-page/widgets/nearby_bus_stops_map.dart';
 import 'package:bustracking/services/socket_service.dart';
-import 'package:bustracking/widgets/bus-route.dart';
+import 'package:bustracking/pages/bus-page/widgets/bus-route.dart';
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
-import 'package:bustracking/widgets/panel_widget.dart';
+import 'package:bustracking/commons/widgets/panel_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:socket_io_common/src/util/event_emitter.dart';
 
 const MAPBOX_ACCESS_TOKEN =
     'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3d4eDQ3OTcwaHk3Mm51cjNmcWRvZjA2In0.AAF794oxyxFR_-wAvVwMfQ';
@@ -26,8 +24,6 @@ class BusPage extends StatefulWidget {
 }
 
 class _BusPageState extends State<BusPage> {
-  LatLng myLocation = LatLng(-25.4978575, -54.6789153);
-
   static const double fabHeightClosed = 100.0;
   double fabHeight = fabHeightClosed;
 
@@ -35,12 +31,13 @@ class _BusPageState extends State<BusPage> {
   final mapController = MapController();
 
   List<LatLng> puntos = [];
-  // List<Bus> buses = [];
+
   String busID = '';
 
   @override
   void initState() {
     final socketService = Provider.of<SocketService>(context, listen: false);
+    socketService.socket.connect();
     socketService.socket.on('change-locationReturn', handleBusLocation);
     super.initState();
   }
@@ -49,6 +46,8 @@ class _BusPageState extends State<BusPage> {
   void dispose() {
     final socketService = Provider.of<SocketService>(context, listen: false);
     socketService.socket.off('change-locationReturn');
+    socketService.socket.disconnect();
+
     super.dispose();
   }
 
@@ -58,14 +57,13 @@ class _BusPageState extends State<BusPage> {
     print(payload);
     String payloadId = payload[0];
     if (payloadId == busID) {
-      setState(() {
-        puntos.clear();
-        puntos.add(LatLng(
-          double.parse(payload[1]),
-          double.parse(payload[2]),
-        ));
-      });
+      puntos.clear();
+      puntos.add(LatLng(
+        double.parse(payload[1]),
+        double.parse(payload[2]),
+      ));
     }
+    setState(() {});
   }
 
   @override
@@ -75,43 +73,49 @@ class _BusPageState extends State<BusPage> {
           height: 60,
           width: 60,
           point: latlng,
-          builder: (_) => Container(
-                  child: const Center(
+          builder: (_) => Stack(
+                children: const [
+                  Center(
                       child: Image(
-                image: AssetImage('assets/bus_point.png'),
-                height: 60,
-                width: 60,
-              ))));
+                    image: AssetImage('assets/bus_point.png'),
+                    height: 60,
+                    width: 60,
+                  )),
+                ],
+              ));
     }).toList();
 
     final args = ModalRoute.of(context)!.settings.arguments as BusPageArguments;
 
-    final String busName = args.busName;
-    final String busId = args.busId;
+    final bus = args.bus;
+    final String busStopName = args.busStopName;
     final LatLng busStopLatLng = args.busStopLatLng;
-    busID = args.busId;
-    //Obtener de los args
-    final String busStopName = 'Parada A';
+
+    final busLatLng = LatLng(bus.latitud, bus.longitud);
+    
+    busID = args.bus.id;
 
     // final String ruta = '${args.primeraParada} hasta ${args.ultimaParada}';
-
     final panelHeightClosed = MediaQuery.of(context).size.height * 0.1;
     final panelHeightOpen = MediaQuery.of(context).size.height * 0.53;
 
     return Scaffold(
         appBar: CustomAppBar(
-          centerTitle: true,
-          title: appbarTitle(busName),
+          centerTitle: false,
+          title: appbarTitle(bus.titulo, busLatLng, busStopLatLng, bus.linea),
         ),
         body: Stack(
           alignment: Alignment.topCenter,
           children: [
-            BusStopPageMap(
-                myLocation: myLocation,
-                busStopLatLng: busStopLatLng,
-                extraMarkers: markers),
-            slidingUpPanel(panelHeightOpen, panelHeightClosed, busStopName),
-            Positioned(right: 20, bottom: fabHeight, child: waitButton())
+            MapWidget(
+              markers: markers,
+              busStopLatLng: busStopLatLng,
+
+              busRoute: bus.ruta
+            ),
+            slidingUpPanel(panelHeightOpen, panelHeightClosed, busStopName, bus),
+            Positioned(
+                right: 20, bottom: fabHeight, child: waitButton(busStopLatLng))
           ],
         ));
   }
@@ -129,6 +133,8 @@ class _BusPageState extends State<BusPage> {
     String time;
     int hours = 0;
     int distance = calculateDistance(point, myLocation);
+
+    //pasar tiempo a segundos y si son menos de 60 mostrar segundos xD
     int minutes = (((distance / 1000) * 60) / 12).round();
     while (minutes > 60) {
       hours = hours + 1;
@@ -143,45 +149,41 @@ class _BusPageState extends State<BusPage> {
     }
   }
 
-  appbarTitle(String busName) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  appbarTitle(String busName, LatLng busLatLng, LatLng busStopLatLng, String lineaBus) {
+    return Column(
       children: [
-        SizedBox(),
-        Text(
-          busName,
-          style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-              fontFamily: 'Betm-Medium',
-              fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Linea ${lineaBus} ${busName}',
+              style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                  fontFamily: 'Betm-Medium',
+                  fontWeight: FontWeight.bold),
+            ),
+            Row(
+              children: [
+                Text(
+                  "(${calculateTime(busLatLng, busStopLatLng)})",
+                  style: TextStyle(color: Colors.blue, fontSize: 13),
+                ),
+                Icon(
+                  Icons.directions_bus,
+                  size: 18,
+                  color: Colors.blueAccent,
+                ),
+              ],
+            )
+          ],
         ),
-        Text(
-          '3 min',
-          style: TextStyle(color: Colors.blue, fontSize: 16),
-        )
       ],
     );
   }
 
-  slidingUpPanel(
-      double panelHeightOpen, double panelHeightClosed, busStopName) {
-    Bus bus = Bus(
-        id: "61dc88db71b65dbf0b323be9",
-        titulo: "Ciudad Jardin",
-        linea: "21",
-        paradas: [
-          "Terminal Km 9",
-          "Terminal urbana Microcentro",
-          "Parada A",
-          "Parada B",
-          "Parada C"
-        ],
-        primeraParada: "Terminal Km 9",
-        ultimaParada: "Terminal urbana Microcentro",
-        proximaParada: "Parada A",
-        latitud: -25.4970105,
-        longitud: -54.66678947);
+  Widget slidingUpPanel(double panelHeightOpen, double panelHeightClosed,String busStopName,Bus bus) {
+    
 
     List route = bus.paradas;
     bool onnOrOff = false;
@@ -240,28 +242,46 @@ class _BusPageState extends State<BusPage> {
             }));
   }
 
-  waitButton() {
-    return ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          primary: Colors.blueAccent,
-          shape: new RoundedRectangleBorder(
-            borderRadius: new BorderRadius.circular(20.0),
-          ),
-        ),
-        onPressed: () {},
-        child: Padding(
-          padding: const EdgeInsets.only(top: 10, bottom: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.hourglass_empty),
-              Text(
-                'Esperar aqui',
-                style: TextStyle(fontSize: 18),
+  waitButton(LatLng busStopLatLng) {
+    return BlocBuilder<MyLocationBloc, MyLocationState>(
+      builder: (context, state) {
+        return ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              primary: isNear(state.location, busStopLatLng)
+                  ? Colors.blueAccent
+                  : Colors.grey,
+              shape: new RoundedRectangleBorder(
+                borderRadius: new BorderRadius.circular(20.0),
               ),
-            ],
-          ),
-        ));
+            ),
+            onPressed: () {},
+            child: Padding(
+              padding: const EdgeInsets.only(top: 10, bottom: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.hourglass_empty),
+                  Text(
+                    'Esperar aqui',
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ));
+      },
+    );
+  }
+
+  bool isNear(LatLng? userLocation, LatLng busStop) {
+    int distance = calculateDistance(userLocation!, busStop);
+
+    if (distance < 30) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

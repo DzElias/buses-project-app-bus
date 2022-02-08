@@ -1,17 +1,20 @@
 import 'dart:convert';
 
 import 'package:bustracking/commons/models/bus.dart';
+import 'package:bustracking/commons/widgets/map.dart';
 import 'package:bustracking/pages/bus-stop-page/models/bus-stop-page-args.dart';
 import 'package:bustracking/pages/bus-stop-page/widgets/bus_stop_page_map.dart';
 
 import 'package:bustracking/pages/bus-stop-page/widgets/bus_widget.dart';
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
-import 'package:bustracking/widgets/panel_widget.dart';
+import 'package:bustracking/services/socket_service.dart';
+import 'package:bustracking/commons/widgets/panel_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:latlong2/latlong.dart';
@@ -26,41 +29,34 @@ class BusStopPage extends StatefulWidget {
 }
 
 class _BusStopPageState extends State<BusStopPage> {
+  late MapController mapController;
   @override
   void initState() {
+    mapController = MapController();
+
     generateBusList();
     super.initState();
   }
 
-  static const double fabHeightClosed = 100.0;
-  double fabHeight = fabHeightClosed;
-
-  final panelController = PanelController();
   final ScrollController controller = ScrollController();
 
   List<Bus> buses = [];
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as BusStopPageArguments;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as BusStopPageArguments;
     final String busStopName = args.busStopName;
     final String busStopAdress = args.busStopAdress;
     final String time = args.time;
     final LatLng busStopLatLng = args.busStopLatLng;
-    final LatLng myLocation = args.myLocation;
-
-    final panelHeightClosed = MediaQuery.of(context).size.height * 0.1;
-    final panelHeightOpen = MediaQuery.of(context).size.height * 0.5;
+    
     return Scaffold(
       appBar:
           CustomAppBar(title: appbarTitle(busStopName, busStopAdress, time)),
       body: Stack(
         children: [
-          BusStopPageMap(
-            extraMarkers: [],
-            myLocation: myLocation,
-            busStopLatLng: busStopLatLng,
-          ),
+          MapWidget( busStopLatLng: busStopLatLng, markers: [],busRoute: '',),
           Column(
             children: [
               Spacer(),
@@ -84,7 +80,9 @@ class _BusStopPageState extends State<BusStopPage> {
       Bus bus = Bus.fromJson(singleBus);
       busesToAdd.add(bus);
     }
-    setState(() { buses = busesToAdd;});
+    setState(() {
+      buses = busesToAdd;
+    });
   }
 
   appbarTitle(String busStopName, String busStopAdress, String time) {
@@ -136,7 +134,8 @@ class _BusStopPageState extends State<BusStopPage> {
     );
   }
 
-  slidingUpPanel(String busStopName, BuildContext context, LatLng busStopLatLng) {
+  slidingUpPanel(
+      String busStopName, BuildContext context, LatLng busStopLatLng) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 10),
       child: Column(children: [
@@ -170,32 +169,29 @@ class _BusStopPageState extends State<BusStopPage> {
                   itemBuilder: (context, index) {
                     final item = buses[index];
                     print(buses);
-                    return (item.proximaParada == busStopName)? BusWidget(
+                    return (item.proximaParada == busStopName) ?
+                          BusWidget(
+                            bus: item,
+                            busStopName: busStopName,
                             busStopLatLng: busStopLatLng,
-                            busId: item.id,
-                            busName: 'Linea ${item.linea} ${item.titulo}',
-                            busLocation: LatLng(item.latitud, item.longitud),
-                            linea: item.linea,
-                            paradas: item.paradas,
-                            primeraParada: item.primeraParada,
-                            ultimaParada: item.ultimaParada,
-                            proximaParada: item.proximaParada,
-                            
-                            time: calculateTime(LatLng(item.latitud, item.longitud), busStopLatLng))
+                            time: calculateTime(LatLng(item.latitud, item.longitud), busStopLatLng), )
                         : SizedBox();
                   },
                 )))
       ]),
     );
   }
+
   calculateDistance(LatLng point, LatLng myLocation) {
     //TODO: si es menor a mil pasar metros y si es mas pasar a km y redondear
-    var _distanceInMeters = Geolocator.distanceBetween(point.latitude, point.longitude, myLocation.latitude, myLocation.longitude);
+    var _distanceInMeters = Geolocator.distanceBetween(point.latitude,
+        point.longitude, myLocation.latitude, myLocation.longitude);
 
     int distance = _distanceInMeters.round();
     return distance;
   }
-   calculateTime(LatLng point, LatLng myLocation) {
+
+  calculateTime(LatLng point, LatLng myLocation) {
     String time;
     int hours = 0;
     int distance = calculateDistance(point, myLocation);

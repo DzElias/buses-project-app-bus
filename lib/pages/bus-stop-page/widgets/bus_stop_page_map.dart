@@ -14,8 +14,7 @@ import 'package:http/http.dart';
 
 import 'package:latlong2/latlong.dart';
 
-const MAPBOX_ACCESS_TOKEN =
-    'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3d4eDQ3OTcwaHk3Mm51cjNmcWRvZjA2In0.AAF794oxyxFR_-wAvVwMfQ';
+const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3d4eDQ3OTcwaHk3Mm51cjNmcWRvZjA2In0.AAF794oxyxFR_-wAvVwMfQ';
 const MAPBOX_STYLE = 'mapbox/light-v10';
 const MARKER_COLOR = Colors.blueAccent;
 const MARKER_SIZE_EXPANDED = 60.0;
@@ -25,11 +24,14 @@ class BusStopPageMap extends StatefulWidget {
   final LatLng myLocation;
   final LatLng busStopLatLng;
   final List<Marker> extraMarkers;
-  
-  
+  final bool busRoute;
 
   const BusStopPageMap(
-      {Key? key, required this.myLocation, required this.busStopLatLng, required this.extraMarkers})
+      {Key? key,
+      required this.myLocation,
+      required this.busStopLatLng,
+      required this.extraMarkers,
+      this.busRoute = false})
       : super(key: key);
 
   @override
@@ -37,7 +39,6 @@ class BusStopPageMap extends StatefulWidget {
 }
 
 class _BusStopPageMapState extends State<BusStopPageMap>
-
     with TickerProviderStateMixin {
   late final AnimationController animationController;
   late MapController mapController;
@@ -51,87 +52,99 @@ class _BusStopPageMapState extends State<BusStopPageMap>
     animationController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 800));
     animationController.repeat(reverse: true);
+    animationController.forward();
     super.initState();
   }
 
   @override
   void dispose() {
     animationController.dispose();
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    Polyline _rutaParada =
-        Polyline(points: rutaCoords, strokeWidth: 4, color: Colors.blue, isDotted: true);
+    Polyline _rutaParada = Polyline(
+        points: rutaCoords, strokeWidth: 4, color: Colors.blue, isDotted: true);
+    final points = polylinePoints.decodePolyline(
+        "zdhso@`lpggBrtEevQkEeo@tv@i|ChVW`yOpwEobHrwXyoOm|Ey@q@");
 
     return Scaffold(
       floatingActionButton: floatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
       body: FlutterMap(
-        mapController: mapController,
-        options: MapOptions(
-            center: widget.myLocation,
-            minZoom: 5,
-            zoom: 14,
-            maxZoom: 18,
-            interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate),
-        layers: [
-          TileLayerOptions(
-              urlTemplate:
-                  "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
-              additionalOptions: {
-                'accessToken': MAPBOX_ACCESS_TOKEN,
-                'id': MAPBOX_STYLE
-              },
-              tileProvider: const CachedTileProvider()),
-          MarkerLayerOptions(
-           markers: widget.extraMarkers
-          ),
-          MarkerLayerOptions(markers: markers),
-          MarkerLayerOptions(
-            markers: [
-              Marker(
-                height: 60,
-                width: 60,
-                point: widget.myLocation,
-                builder: (BuildContext context) =>
-                    MyLocationMarker(animationController),
-              ),
-              Marker(
-                  height: MARKER_SIZE_EXPANDED,
-                  width: MARKER_SIZE_EXPANDED,
-                  point: widget.busStopLatLng,
-                  builder: (_) {
-                    return GestureDetector(
-                        onTap: () async {
-                          animatedMapMove(
-                              widget.busStopLatLng, mapController.zoom);
-                        },
-                        // child: Icon(Icons.place),
-                        child: Center(
-                            child: Container(
-                          child: Image(
-                            image: AssetImage('assets/busStop.png'),
-                          ),
-                          height: MARKER_SIZE_EXPANDED,
-                          width: MARKER_SIZE_EXPANDED,
-                        )));
-                  })
-              // marker
-            ],
-          ),
-          PolylineLayerOptions(
-            polylines: [_rutaParada],
-          )
-        ]),
+          mapController: mapController,
+          options: MapOptions(
+              center: widget.myLocation,
+              minZoom: 5,
+              zoom: 14,
+              maxZoom: 18,
+              interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate),
+          layers: [
+            TileLayerOptions(
+                urlTemplate:
+                    "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
+                additionalOptions: {
+                  'accessToken': MAPBOX_ACCESS_TOKEN,
+                  'id': MAPBOX_STYLE
+                },
+                tileProvider: const CachedTileProvider()),
+            MarkerLayerOptions(markers: widget.extraMarkers),
+            MarkerLayerOptions(markers: markers),
+            MarkerLayerOptions(
+              markers: [
+                Marker(
+                  height: 60,
+                  width: 60,
+                  point: widget.myLocation,
+                  builder: (BuildContext context) =>
+                      MyLocationMarker(animationController),
+                ),
+                Marker(
+                    height: MARKER_SIZE_EXPANDED,
+                    width: MARKER_SIZE_EXPANDED,
+                    point: widget.busStopLatLng,
+                    builder: (_) {
+                      return GestureDetector(
+                          onTap: () async {
+                            animatedMapMove(
+                                widget.busStopLatLng, mapController.zoom);
+                          },
+                          // child: Icon(Icons.place),
+                          child: Center(
+                              child: Container(
+                            child: Image(
+                              image: AssetImage('assets/busStop.png'),
+                            ),
+                            height: MARKER_SIZE_EXPANDED,
+                            width: MARKER_SIZE_EXPANDED,
+                          )));
+                    })
+                // marker
+              ],
+            ),
+            PolylineLayerOptions(
+              polylines: [_rutaParada],
+            ),
+            widget.busRoute
+                ? PolylineLayerOptions(polylines: [
+                    Polyline(
+                        strokeWidth: 3.0,
+                        color: Colors.blueAccent,
+                        points: points
+                            .map((point) => LatLng(
+                                point.latitude / 10, point.longitude / 10))
+                            .toList())
+                  ])
+                : PolylineLayerOptions()
+          ]),
     );
   }
+
   floatingActionButton() {
     return FloatingActionButton(
-
-      mini:true,
-      
+      mini: true,
       backgroundColor: Colors.white,
       child: Icon(
         Icons.my_location,
@@ -200,20 +213,19 @@ class _BusStopPageMapState extends State<BusStopPageMap>
     final points = polylinePoints.decodePolyline(geometry);
 
     setState(() {
-       rutaCoords = points
+      rutaCoords = points
           .map((point) => LatLng(point.latitude / 10, point.longitude / 10))
           .toList();
-      if(rutaCoords.isNotEmpty ){
-        animatedMapMove(rutaCoords[((rutaCoords.length)/2).round()], 13);
+      if (rutaCoords.isNotEmpty) {
+        animatedMapMove(destino, 15);
+        // rutaCoords[((rutaCoords.length) / 2).round()]
       }
-      
     });
   }
 
-  getBuses()async{
-
-    final response = await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas/bus'));
-    
+  getBuses() async {
+    final response =
+        await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas/bus'));
     List data = jsonDecode(response.body);
     List<Bus> buses = [];
     for (var singleBus in data) {
@@ -223,14 +235,13 @@ class _BusStopPageMapState extends State<BusStopPageMap>
     final _markerList = <Marker>[];
     for (int i = 0; i < buses.length; i++) {
       final mapItem = buses[i];
-       _markerList.add(Marker(point: LatLng(mapItem.latitud, mapItem.longitud), builder: (BuildContext context) { return Center(
-         //agregar imagen de bus
-       ); }));
-      
-      }
-     
-    
+      _markerList.add(Marker(
+          point: LatLng(mapItem.latitud, mapItem.longitud),
+          builder: (BuildContext context) {
+            return Center(
+                //agregar imagen de bus
+                );
+          }));
+    }
   }
-
-  
 }

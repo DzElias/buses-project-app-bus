@@ -1,4 +1,4 @@
-import 'package:bustracking/widgets/daily_reminder.dart';
+import 'package:bustracking/pages/daily-reminder-page/widgets/daily_reminder.dart';
 import 'package:bustracking/commons/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

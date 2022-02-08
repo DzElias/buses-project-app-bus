@@ -17,7 +17,7 @@ class DailyReminder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       
-      margin: EdgeInsets.only(top: 20),
+      margin: EdgeInsets.only(top: 20, right: 10, left: 10),
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),

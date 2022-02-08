@@ -70,8 +70,12 @@ class MainDrawer extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     onTap: () {
-                      Navigator.pushReplacementNamed(
-                          context, 'nearby-bus-stop-page');
+                      if(ModalRoute.of(context)!.settings.name != 'nearby-bus-stop-page'){
+                        Navigator.pushReplacementNamed(context, 'nearby-bus-stop-page');
+                      }else{
+                        Navigator.pop(context);
+                      }
+                      
                     },
                   ),
                   ListTile(
@@ -82,7 +86,12 @@ class MainDrawer extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     onTap: () {
-                      Navigator.pushReplacementNamed(context, 'search-bus');
+                      if(ModalRoute.of(context)!.settings.name != 'search-bus'){
+                        Navigator.pushReplacementNamed(context, 'search-bus');
+                      }else{
+                        Navigator.pop(context);
+                      }
+                      
                     },
                   ),
                   ListTile(
@@ -95,7 +104,12 @@ class MainDrawer extends StatelessWidget {
                           fontFamily: 'Betm-Medium'),
                     ),
                     onTap: () {
-                      Navigator.pushNamed(context, 'daily-reminders-page');
+                      if(ModalRoute.of(context)!.settings.name != 'daily-reminders-page'){
+                        Navigator.pushReplacementNamed(context, 'daily-reminders-page');
+                      }else{
+                        Navigator.pop(context);
+                      }
+                      
                     },
                   ),
                 ],
@@ -113,6 +127,7 @@ class MainDrawer extends StatelessWidget {
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                 ),
                 onTap: () {
+                  //TODO: cerrar sesion xD
                   Navigator.pushReplacementNamed(context, 'login');
                 },
               ),

@@ -9,7 +9,7 @@ class BusStopPageArguments {
   final String busStopAdress;
   final String time;
   final LatLng busStopLatLng;
-  final LatLng myLocation;
 
-  BusStopPageArguments( this.busStopName, this.busStopAdress, this.time, this.busStopLatLng, this.myLocation);
+
+  BusStopPageArguments( this.busStopName, this.busStopAdress, this.time, this.busStopLatLng);
 }

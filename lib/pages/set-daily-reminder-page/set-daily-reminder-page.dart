@@ -1,7 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
-import 'package:bustracking/widgets/multiSelect.dart';
+import 'package:bustracking/pages/set-daily-reminder-page/widgets/multiSelect.dart';
 
 import 'package:flutter/material.dart';
 

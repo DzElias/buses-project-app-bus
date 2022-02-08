@@ -29,7 +29,7 @@ class SocketService with ChangeNotifier {
     // Dart client
     this._socket = IO.io('https://pruebas-socket.herokuapp.com/', {
       'transports': ['websocket'],
-      'autoConnect': true
+      'autoConnect': false
     });
 
     this._socket.on('connect', (_) {

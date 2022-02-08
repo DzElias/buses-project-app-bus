@@ -10,7 +10,7 @@ class CustomCard extends StatelessWidget {
   final bool isNearest;
   final String stopAdress;
   final LatLng stopLatLng;
-  final LatLng myLocation;
+
 
   const CustomCard(
       {Key? key,
@@ -20,7 +20,7 @@ class CustomCard extends StatelessWidget {
       required this.imageLink,
       required this.stopAdress,
       required this.stopLatLng,
-      required this.myLocation,
+     
       
       this.isNearest = false})
       : super(key: key);
@@ -30,7 +30,7 @@ class CustomCard extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, 'bus-stop', arguments: BusStopPageArguments(this.stopName,this.stopAdress, this.time, this.stopLatLng, this.myLocation));
+          Navigator.pushNamed(context, 'bus-stop', arguments: BusStopPageArguments(this.stopName,this.stopAdress, this.time, this.stopLatLng,));
         },
         child: Padding(
           padding: const EdgeInsets.all(10.0),
@@ -40,34 +40,52 @@ class CustomCard extends StatelessWidget {
               Expanded(
                 child: Stack(
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                        image: DecorationImage(
-                          image: NetworkImage(imageLink),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
+                    // Container(
+                    //   decoration: BoxDecoration(
+                    //     borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    //     image: DecorationImage(
+                    //       image: NetworkImage(imageLink),
+                    //       fit: BoxFit.cover,
+                    //     ),
+                    //   ),
+                    // ),
                     isNearest
                         ? Padding(
                             padding: const EdgeInsets.all(6.0),
                             child: Align(
-                                alignment: Alignment.bottomRight,
+                                alignment: Alignment.topRight,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6)
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(3)
                                   ),
                                     padding: EdgeInsets.all(6),
                                     
                                     child: Text(
                                       'Parada mas cercana',
                                       style:
-                                          TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w500),
+                                          TextStyle(color: Colors.white,fontSize: 13, fontWeight: FontWeight.w500),
                                     ))),
                           )
                         : SizedBox(),
+
+                    // Padding(
+                    //         padding: const EdgeInsets.all(6.0),
+                    //         child: Align(
+                    //             alignment: Alignment.topLeft,
+                    //             child: Container(
+                    //               decoration: BoxDecoration(
+                    //                 color: Colors.redAccent,
+                    //                 borderRadius: BorderRadius.circular(3)
+                    //               ),
+                    //                 padding: EdgeInsets.all(6),
+                                    
+                    //                 child: Text(
+                    //                   'Prox Bus a 6 min',
+                    //                   style:
+                    //                       TextStyle(color: Colors.white,fontSize: 13, fontWeight: FontWeight.w500),
+                    //                 ))),
+                    //       )
                   ],
                 ),
               ),
@@ -120,9 +138,15 @@ class CustomCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.blueAccent,
+                  Row(
+                    children: [
+                      Text('¡Ir allá!', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.blueAccent),),
+                      SizedBox(width: 10,),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.blueAccent,
+                      ),
+                    ],
                   )
                 ],
               ),

@@ -2,10 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:animate_do/animate_do.dart';
+import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
+import 'package:bustracking/bloc/search/search_bloc.dart';
 import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
+import 'package:bustracking/commons/widgets/my-location-marker.dart';
 import 'package:bustracking/helpers/cachedTileProvider.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/custom-card.dart';
+import 'package:bustracking/pages/nearby-bus-stop-page/widgets/stop_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -14,6 +19,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
 const MAPBOX_ACCESS_TOKEN =
     'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3d4eDQ3OTcwaHk3Mm51cjNmcWRvZjA2In0.AAF794oxyxFR_-wAvVwMfQ';
@@ -29,8 +35,7 @@ class NearbyBusStopsMap extends StatefulWidget {
   State<NearbyBusStopsMap> createState() => _NearbyBusStopsMapState();
 }
 
-class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
-    with TickerProviderStateMixin {
+class _NearbyBusStopsMapState extends State<NearbyBusStopsMap> with TickerProviderStateMixin {
   LatLng _myLocation = LatLng(-25.4978575, -54.6789153);
   List<BusStop> busStops = [];
   int _selectedIndex = 0;
@@ -42,16 +47,27 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
 
   @override
   void initState() {
+    getLastLocation();
+
     mapController = MapController();
+
     animationController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 800));
     animationController.repeat(reverse: true);
-    super.initState();
+
+    final myLocationBloc = Provider.of<MyLocationBloc>(context, listen: false);
+    myLocationBloc.startFollowing();
+
     getBusStops();
+
+    super.initState();
   }
 
   @override
   void dispose() {
+    final myLocationBloc = Provider.of<MyLocationBloc>(context, listen: false);
+    myLocationBloc.cancelFollowing();
+
     animationController.dispose();
     _pageController.dispose();
     super.dispose();
@@ -60,46 +76,60 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: floatingActionButton(),
+      // floatingActionButton: floatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
       body: Stack(
         children: [
-          FlutterMap(
-            mapController: mapController,
-            options: MapOptions(
-                center: _myLocation,
-                minZoom: 5,
-                zoom: 16,
-                maxZoom: 18,
-                interactiveFlags:
-                    InteractiveFlag.all & ~InteractiveFlag.rotate),
-            layers: [
-              TileLayerOptions(
-                  urlTemplate:
-                      "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
-                  additionalOptions: {
-                    'accessToken': MAPBOX_ACCESS_TOKEN,
-                    'id': MAPBOX_STYLE
-                  },
-                   tileProvider: const CachedTileProvider()
-                  ),
-                 
-              MarkerLayerOptions(markers: markers),
-              MarkerLayerOptions(
-                markers: [
-                  Marker(
-                    height: 60,
-                    width: 60,
-                    point: _myLocation,
-                    builder: (BuildContext context) =>
-                        MyLocationMarker(animationController),
-                  )
-                  // marker
-                ],
-              ),
-            ],
+          BlocBuilder<MyLocationBloc, MyLocationState>(
+            builder: (context, state) {
+              if (state.locationExist) {
+                _myLocation = state.location!;
+
+                return FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                      center: _myLocation,
+                      minZoom: 5,
+                      zoom: 16,
+                      maxZoom: 18,
+                      interactiveFlags:
+                          InteractiveFlag.all & ~InteractiveFlag.rotate),
+                  layers: [
+                    TileLayerOptions(
+                        urlTemplate:
+                            "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
+                        additionalOptions: {
+                          'accessToken': MAPBOX_ACCESS_TOKEN,
+                          'id': MAPBOX_STYLE
+                        },
+                        tileProvider: const CachedTileProvider()),
+                    MarkerLayerOptions(markers: markers),
+                    MarkerLayerOptions(
+                      markers: [
+                        Marker(
+                          height: 60,
+                          width: 60,
+                          point: LatLng(state.location!.latitude,
+                              state.location!.longitude),
+                          builder: (BuildContext context) => MyLocationMarker(animationController),
+                        )
+                        // marker
+                      ],
+                    ),
+                  ],
+                );
+              }
+              return SizedBox();
+            },
           ),
-          pageView(context)
+          BlocBuilder<SearchBloc, SearchState>(
+            builder: (context, state) {
+              if(state.manualSelection){
+                return Container();
+              }
+              return pageView(context);
+            },
+          )
         ],
       ),
     );
@@ -136,9 +166,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
     return Container(
       margin: EdgeInsets.only(top: 150, right: 20),
       child: FloatingActionButton(
-
-        mini:true,
-        
+        mini: true,
         backgroundColor: Colors.white,
         child: Icon(
           Icons.my_location,
@@ -156,8 +184,9 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
         left: 0,
         right: 0,
         bottom: 20,
-        height: MediaQuery.of(context).size.height * 0.3,
-        child: busStops.isNotEmpty ? NotificationListener<OverscrollIndicatorNotification>(
+        height: MediaQuery.of(context).size.height * 0.2,
+        child: busStops.isNotEmpty
+            ? NotificationListener<OverscrollIndicatorNotification>(
                 onNotification: (overScroll) {
                   overScroll.disallowGlow();
                   return true;
@@ -171,15 +200,13 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                       int nearestStopIndex = 0;
                       int menDistance = 100000;
                       for (int i = 0; i < busStops.length; i++) {
-                        print(i);
                         final _item = busStops[i];
                         if (calculateDistance(_item.location) < menDistance) {
                           menDistance = calculateDistance(_item.location);
                           nearestStopIndex = i;
                         }
                       }
-                      return _StopDetails(
-                        myLocation: _myLocation,
+                      return StopDetails(
                           busStop: item,
                           isNearest: index == nearestStopIndex,
                           distanceInMeters: calculateDistance(item.location),
@@ -190,31 +217,29 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
   }
 
   getBusStops() async {
-    final response =
-        await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas'));
+    final response =await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas'));
     List data = jsonDecode(response.body);
+    List<BusStop> busStopsTemp = [];
 
     for (var singleBusStop in data) {
       BusStop busStop = (BusStop(
           id: singleBusStop['_id'],
           title: singleBusStop['titulo'],
-          location: LatLng(singleBusStop['latitud'].toDouble(), singleBusStop['longitud'].toDouble()),
+          location: LatLng(singleBusStop['latitud'].toDouble(),singleBusStop['longitud'].toDouble()),
           adress: singleBusStop['direccion'],
           imageLink: singleBusStop['imagen']));
-      busStops.add(busStop);
+          busStops.add(busStop);
     }
-    busStops.sort((a, b) => (calculateDistance(a.location))
-        .compareTo(calculateDistance(b.location)));
+    busStops.sort((a, b) => (calculateDistance(a.location)).compareTo(calculateDistance(b.location)));
     createBusStopsMarkers();
   }
 
   createBusStopsMarkers() {
-    final _markerList = <Marker>[];
+ 
 
     for (int i = 0; i < busStops.length; i++) {
       final mapItem = busStops[i];
-      _markerList.add(
-        Marker(
+      markers.add(Marker(
           height: MARKER_SIZE_EXPANDED,
           width: MARKER_SIZE_EXPANDED,
           point: mapItem.location,
@@ -224,7 +249,8 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                   _selectedIndex = i;
 
                   animatedMapMove(mapItem.location, mapController.zoom);
-                  busStops.isNotEmpty ? setState(() {
+                  busStops.isNotEmpty
+                      ? setState(() {
                           _pageController.animateToPage(i,
                               duration: Duration(milliseconds: 300),
                               curve: Curves.easeOut);
@@ -238,7 +264,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
           }));
     }
     setState(() {
-      markers = _markerList;
+      
     });
   }
 
@@ -275,76 +301,9 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
 
     controller.forward();
   }
-}
 
-
-
-class MyLocationMarker extends AnimatedWidget {
-  const MyLocationMarker(Animation<double> animation, {Key? key})
-      : super(key: key, listenable: animation);
-
-  @override
-  Widget build(BuildContext context) {
-    final value = (listenable as Animation<double>).value;
-    final newValue = lerpDouble(0.7, 1.0, value)!;
-    final size = 25;
-    return Center(
-      child: Stack(
-        children: [
-          Center(
-            child: Container(
-              height: size * newValue,
-              width: size * newValue,
-              decoration: BoxDecoration(
-                  color: MARKER_COLOR.withOpacity(0.3), shape: BoxShape.circle),
-            ),
-          ),
-          Center(
-            child: Container(
-              height: 15,
-              width: 15,
-              decoration:
-                  BoxDecoration(color: MARKER_COLOR, shape: BoxShape.circle),
-            ),
-          ),
-        ],
-      ),
-    );
+  void getLastLocation() async {
+    Position? position = await Geolocator.getLastKnownPosition();
+    _myLocation = LatLng(position!.latitude, position.longitude);
   }
 }
-
-class _StopDetails extends StatelessWidget {
-  final BusStop busStop;
-  final bool isNearest;
-  final int distanceInMeters;
-  final String time;
-  final LatLng myLocation;
-  const _StopDetails(
-      {Key? key,
-      required this.distanceInMeters,
-      required this.busStop,
-      required this.time,
-      required this.myLocation,
-      
-      this.isNearest = false, })
-      : super(key: key);
-  
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: CustomCard(
-          stopLatLng: busStop.location,
-          isNearest: isNearest,
-          stopName: busStop.title,
-          distance: (distanceInMeters > 1000)
-              ? '${(distanceInMeters / 1000).round()} Km '
-              : '${distanceInMeters} m ',
-          time: '(${time})',
-          imageLink: busStop.imageLink,
-          stopAdress: busStop.adress,
-          myLocation: myLocation,
-        ));
-  }
-}
-
