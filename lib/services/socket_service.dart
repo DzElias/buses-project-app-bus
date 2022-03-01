@@ -1,53 +1,44 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as iO;
 
-enum ServerStatus {
-  Online,
-  Offline,
-  Connecting
-}
-
+enum ServerStatus { online, offline, connecting }
 
 class SocketService with ChangeNotifier {
+  ServerStatus _serverStatus = ServerStatus.connecting;
+  late iO.Socket _socket;
 
-  ServerStatus _serverStatus = ServerStatus.Connecting;
-  late IO.Socket _socket;
+  ServerStatus get serverStatus => _serverStatus;
 
-  ServerStatus get serverStatus => this._serverStatus;
-  
-  IO.Socket get socket => this._socket;
-  Function get emit => this._socket.emit;
+  iO.Socket get socket => _socket;
+  Function get emit => _socket.emit;
 
-
-  SocketService(){
-    this._initConfig();
+  SocketService() {
+    _initConfig();
   }
 
   void _initConfig() {
-    
     // Dart client
-    this._socket = IO.io('https://pruebas-socket.herokuapp.com/', {
+    _socket = iO.io('https://pruebas-socket.herokuapp.com/', {
       'transports': ['websocket'],
       'autoConnect': false
     });
 
-    this._socket.on('connect', (_) {
-      print('cliente conectado');
-      this._serverStatus = ServerStatus.Online;
+    _socket.on('connect', (_) {
+      if (kDebugMode) {
+        print('cliente conectado');
+      }
+      _serverStatus = ServerStatus.online;
       notifyListeners();
     });
-    
 
-    this._socket.on('disconnect', (_) {
-      print('cliente desconectado');
-      this._serverStatus = ServerStatus.Offline;
-      
+    _socket.on('disconnect', (_) {
+      if (kDebugMode) {
+        print('cliente desconectado');
+      }
+      _serverStatus = ServerStatus.offline;
+
       notifyListeners();
     });
-    
-    
-
   }
-
 }

@@ -115,12 +115,6 @@ class _GpsAccessPageState extends State<GpsAccessPage>
                 ),
               ),
               const SizedBox(height: 10),
-              // TextButton(
-              //     onPressed: () {
-              //       Navigator.pushReplacementNamed(context, 'nearby-bus-stop-page');
-              //     },
-              //     child: const Text('Mas tarde',
-              //         style: TextStyle(color: Colors.blueAccent, fontSize: 18)))
             ],
           ),
         ));
