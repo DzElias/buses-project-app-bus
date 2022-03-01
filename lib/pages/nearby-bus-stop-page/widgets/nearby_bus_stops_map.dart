@@ -1,15 +1,13 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:ui';
+// ignore_for_file: constant_identifier_names
 
-import 'package:animate_do/animate_do.dart';
+import 'dart:convert';
+
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
 import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
 import 'package:bustracking/commons/widgets/my-location-marker.dart';
 import 'package:bustracking/helpers/cachedTileProvider.dart';
-import 'package:bustracking/pages/nearby-bus-stop-page/widgets/custom-card.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/stop_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +16,6 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:http/http.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 
 const MAPBOX_ACCESS_TOKEN =
@@ -35,7 +32,8 @@ class NearbyBusStopsMap extends StatefulWidget {
   State<NearbyBusStopsMap> createState() => _NearbyBusStopsMapState();
 }
 
-class _NearbyBusStopsMapState extends State<NearbyBusStopsMap> with TickerProviderStateMixin {
+class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
+    with TickerProviderStateMixin {
   LatLng _myLocation = LatLng(-25.4978575, -54.6789153);
   List<BusStop> busStops = [];
   int _selectedIndex = 0;
@@ -111,7 +109,8 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap> with TickerProvid
                           width: 60,
                           point: LatLng(state.location!.latitude,
                               state.location!.longitude),
-                          builder: (BuildContext context) => MyLocationMarker(animationController),
+                          builder: (BuildContext context) =>
+                              MyLocationMarker(animationController),
                         )
                         // marker
                       ],
@@ -124,7 +123,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap> with TickerProvid
           ),
           BlocBuilder<SearchBloc, SearchState>(
             builder: (context, state) {
-              if(state.manualSelection){
+              if (state.manualSelection) {
                 return Container();
               }
               return pageView(context);
@@ -217,7 +216,8 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap> with TickerProvid
   }
 
   getBusStops() async {
-    final response =await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas'));
+    final response =
+        await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas'));
     List data = jsonDecode(response.body);
     List<BusStop> busStopsTemp = [];
 
@@ -225,18 +225,18 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap> with TickerProvid
       BusStop busStop = (BusStop(
           id: singleBusStop['_id'],
           title: singleBusStop['titulo'],
-          location: LatLng(singleBusStop['latitud'].toDouble(),singleBusStop['longitud'].toDouble()),
+          location: LatLng(singleBusStop['latitud'].toDouble(),
+              singleBusStop['longitud'].toDouble()),
           adress: singleBusStop['direccion'],
           imageLink: singleBusStop['imagen']));
-          busStops.add(busStop);
+      busStops.add(busStop);
     }
-    busStops.sort((a, b) => (calculateDistance(a.location)).compareTo(calculateDistance(b.location)));
+    busStops.sort((a, b) => (calculateDistance(a.location))
+        .compareTo(calculateDistance(b.location)));
     createBusStopsMarkers();
   }
 
   createBusStopsMarkers() {
- 
-
     for (int i = 0; i < busStops.length; i++) {
       final mapItem = busStops[i];
       markers.add(Marker(
@@ -263,9 +263,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap> with TickerProvid
                 ));
           }));
     }
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   animatedMapMove(LatLng destLocation, double destZoom) {

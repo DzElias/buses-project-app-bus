@@ -3,14 +3,12 @@ import 'dart:async';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
 import 'package:bustracking/commons/models/busStop.dart';
-import 'package:bustracking/commons/models/search_destination_result.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/manual_marker.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/nearby_bus_stops_map.dart';
 
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
 import 'package:bustracking/commons/widgets/main_drawer.dart';
-import 'package:bustracking/search/search_destination.dart';
-import 'package:bustracking/search/search_destination.dart';
+import 'package:bustracking/pages/nearby-bus-stop-page/widgets/search_bar.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,9 +18,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:permission_handler/permission_handler.dart' as permission;
-import 'package:provider/provider.dart';
 
+// ignore: constant_identifier_names
 const MARKER_SIZE_EXPANDED = 60.0;
+// ignore: constant_identifier_names
 const MARKER_SIZE_SHRINKED = 40.0;
 
 class NearbyBusStopPage extends StatefulWidget {
@@ -85,12 +84,8 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
             builder: (context, myLocationstate) {
               return Scaffold(
                 body: Stack(
-                children: [
-                  NearbyBusStopsMap(),
-                  ManualMarker()
-                  
-                ],
-              ),
+                  children: const [NearbyBusStopsMap(), ManualMarker()],
+                ),
               );
             },
           );
@@ -112,17 +107,13 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
           body: FutureBuilder(
             future: checkGpsAccess(context),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
-              print(snapshot.data);
               if (snapshot.hasData) {
                 return BlocBuilder<MyLocationBloc, MyLocationState>(
                   builder: (context, state) {
                     return Stack(
-                      children: [
+                      children: const [
                         NearbyBusStopsMap(),
                         SearchBar(),
-
-                       
-                        // pageView(context)
                       ],
                     );
                   },
@@ -141,8 +132,6 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
     );
   }
 
-
-
   checkGpsAccess(BuildContext context) async {
     bool permisoGPS = await permission.Permission.location.isGranted;
     final gpsActivo = await Geolocator.isLocationServiceEnabled();
@@ -155,66 +144,6 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
       myLocation = LatLng(position!.latitude, position.longitude);
 
       return 'GPS Activo';
-    }
-  }
-}
-
-class SearchBar extends StatelessWidget {
-  const SearchBar({Key? key}) : super(key: key);
-  
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(
-            top: 90,
-          ),
-          child: ElevatedButton(
-            onPressed: () async {
-              final locationBloc = Provider.of<MyLocationBloc>(context, listen: false);
-              final proximity = locationBloc.state.location;
-              final searchResult = await showSearch(
-                  context: context, delegate: SearchDestination(proximity!));
-              searchReturn(context, searchResult);
-            },
-            child: Container(
-              width: 300,
-              height: 50,
-              child: Row(children: const [
-                Icon(
-                  Icons.location_pin,
-                  color: Colors.blueAccent,
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Text(
-                  'Toca para agregar destino',
-                  style: TextStyle(
-                    color: Colors.black45,
-                  ),
-                ),
-              ]),
-            ),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.white,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void searchReturn(BuildContext context, SearchDestinationResult? result) {
-    // print('cancel: ${result!.cancel}');
-    // print('manual: ${result!.manual}');
-    if (result!.cancel) return;
-    if (result.manual) {
-      final searchBloc = Provider.of<SearchBloc>(context, listen: false);
-      searchBloc.add(OnEnableManualMarker());
     }
   }
 }

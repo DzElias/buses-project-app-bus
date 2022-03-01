@@ -1,4 +1,3 @@
-
 import 'package:bustracking/pages/bus-page/view/bus_page.dart';
 import 'package:bustracking/pages/bus-stop-page/view/bus_stop_page.dart';
 import 'package:bustracking/pages/daily-reminder-page/daily_reminders_page.dart';
@@ -12,13 +11,13 @@ import 'package:bustracking/pages/set-daily-reminder-page/set-daily-reminder-pag
 import 'package:flutter/Material.dart';
 
 final Map<String, Widget Function(BuildContext)> appRoutes = {
-  'login': (_) => LoginPage(),
-  'register': (_) => RegisterPage(),
-  'nearby-bus-stop-page': (_) => NearbyBusStopPage(),
+  'login': (_) => const LoginPage(),
+  'register': (_) => const RegisterPage(),
+  'nearby-bus-stop-page': (_) => const NearbyBusStopPage(),
   'search-bus': (_) => SearchBus(),
   'bus-stop': (_) => BusStopPage(),
   'bus-page': (_) => BusPage(),
   'daily-reminders-page': (_) => DailyRemindersPage(),
-  'set-daily-reminder-page': (_) => SetDailyReminderPage(),
-  'gps-access-page': (_) => GpsAccessPage()
+  'set-daily-reminder-page': (_) => const SetDailyReminderPage(),
+  'gps-access-page': (_) => const GpsAccessPage()
 };
