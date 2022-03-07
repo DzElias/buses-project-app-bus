@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:bustracking/bloc/map/map_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
 import 'package:bustracking/commons/models/busStop.dart';
@@ -41,13 +42,13 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
 
   final _pageController = PageController();
   late final AnimationController animationController;
-  late final MapController mapController;
+  // late final MapController mapController;
 
   @override
   void initState() {
     getLastLocation();
 
-    mapController = MapController();
+    // mapController = MapController();
 
     animationController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 800));
@@ -73,6 +74,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
 
   @override
   Widget build(BuildContext context) {
+    final mapBloc = BlocProvider.of<MapBloc>(context);
     return Scaffold(
       // floatingActionButton: floatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
@@ -84,8 +86,8 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                 _myLocation = state.location!;
 
                 return FlutterMap(
-                  mapController: mapController,
                   options: MapOptions(
+                    onMapCreated:( controller ) => mapBloc.add(OnMapInitializedEvent(controller)),
                       center: _myLocation,
                       minZoom: 5,
                       zoom: 16,
@@ -247,7 +249,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
             return GestureDetector(
                 onTap: () async {
                   _selectedIndex = i;
-
+                  MapController mapController = BlocProvider.of<MapBloc>(context).mapController;
                   animatedMapMove(mapItem.location, mapController.zoom);
                   busStops.isNotEmpty
                       ? setState(() {
@@ -267,6 +269,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
   }
 
   animatedMapMove(LatLng destLocation, double destZoom) {
+    MapController mapController = BlocProvider.of<MapBloc>(context).mapController;
     // Create some tweens. These serve to split up the transition from one location to another.
     // In our case, we want to split the transition be<tween> our current map center and the destination.
     final _latTween = Tween<double>(
