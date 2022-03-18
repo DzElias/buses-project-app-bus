@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
+import 'package:bustracking/bloc/stops/stops_bloc.dart';
 import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/manual_marker.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/nearby_bus_stops_map.dart';
@@ -9,6 +11,7 @@ import 'package:bustracking/pages/nearby-bus-stop-page/widgets/nearby_bus_stops_
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
 import 'package:bustracking/commons/widgets/main_drawer.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/search_bar.dart';
+import 'package:bustracking/services/socket_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +21,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:permission_handler/permission_handler.dart' as permission;
+import 'package:provider/provider.dart';
 
 // ignore: constant_identifier_names
 const MARKER_SIZE_EXPANDED = 60.0;
@@ -37,11 +41,20 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
 
   LatLng myLocation = LatLng(0, 0);
 
-  List<BusStop> busStops = [];
   List<Marker> markers = [];
 
   @override
   void initState() {
+    final busesBloc = Provider.of<BusesBloc>(context, listen: false);
+    busesBloc.getBuses();
+    final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
+    stopsBloc.getStops();
+
+    final socketService = Provider.of<SocketService>(context, listen: false);
+    socketService.socket.connect();
+    socketService.socket
+        .on('change-locationReturn', busesBloc.handleBusLocation);
+
     WidgetsBinding.instance?.addObserver(this);
 
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -140,8 +153,8 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
       await Future.delayed(const Duration(milliseconds: 1000));
       Navigator.pushReplacementNamed(context, 'gps-access-page');
     } else {
-      Position? position = await Geolocator.getLastKnownPosition();
-      myLocation = LatLng(position!.latitude, position.longitude);
+      Position? position = await Geolocator.getCurrentPosition();
+      myLocation = LatLng(position.latitude, position.longitude);
 
       return 'GPS Activo';
     }

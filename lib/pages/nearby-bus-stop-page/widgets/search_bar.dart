@@ -23,7 +23,8 @@ class SearchBar extends StatelessWidget {
                   Provider.of<MyLocationBloc>(context, listen: false);
               final proximity = locationBloc.state.location;
               final searchResult = await showSearch(
-                  context: context, delegate: SearchDestination(proximity!));
+                  context: context,
+                  delegate: SearchDestinationDelegate(proximity!));
               searchReturn(context, searchResult);
             },
             child: SizedBox(
@@ -60,7 +61,7 @@ class SearchBar extends StatelessWidget {
     if (result!.cancel) return;
     if (result.manual) {
       final searchBloc = Provider.of<SearchBloc>(context, listen: false);
-      searchBloc.add(OnEnableManualMarker());
+      searchBloc.add(OnActivateManualMarkerEvent());
     }
   }
 }

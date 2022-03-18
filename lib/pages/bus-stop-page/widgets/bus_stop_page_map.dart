@@ -14,7 +14,8 @@ import 'package:http/http.dart';
 
 import 'package:latlong2/latlong.dart';
 
-const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3d4eDQ3OTcwaHk3Mm51cjNmcWRvZjA2In0.AAF794oxyxFR_-wAvVwMfQ';
+const MAPBOX_ACCESS_TOKEN =
+    'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3d4eDQ3OTcwaHk3Mm51cjNmcWRvZjA2In0.AAF794oxyxFR_-wAvVwMfQ';
 const MAPBOX_STYLE = 'mapbox/light-v10';
 const MARKER_COLOR = Colors.blueAccent;
 const MARKER_SIZE_EXPANDED = 60.0;
@@ -221,27 +222,5 @@ class _BusStopPageMapState extends State<BusStopPageMap>
         // rutaCoords[((rutaCoords.length) / 2).round()]
       }
     });
-  }
-
-  getBuses() async {
-    final response =
-        await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas/bus'));
-    List data = jsonDecode(response.body);
-    List<Bus> buses = [];
-    for (var singleBus in data) {
-      Bus bus = Bus.fromJson(singleBus);
-    }
-
-    final _markerList = <Marker>[];
-    for (int i = 0; i < buses.length; i++) {
-      final mapItem = buses[i];
-      _markerList.add(Marker(
-          point: LatLng(mapItem.latitud, mapItem.longitud),
-          builder: (BuildContext context) {
-            return Center(
-                //agregar imagen de bus
-                );
-          }));
-    }
   }
 }

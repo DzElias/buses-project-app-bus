@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/commons/models/bus.dart';
 import 'package:bustracking/commons/widgets/map.dart';
 import 'package:bustracking/pages/bus-stop-page/models/bus-stop-page-args.dart';
@@ -50,13 +51,17 @@ class _BusStopPageState extends State<BusStopPage> {
     final String busStopAdress = args.busStopAdress;
     final String time = args.time;
     final LatLng busStopLatLng = args.busStopLatLng;
-    
+
     return Scaffold(
       appBar:
           CustomAppBar(title: appbarTitle(busStopName, busStopAdress, time)),
       body: Stack(
         children: [
-          MapWidget( busStopLatLng: busStopLatLng, markers: [],busRoute: '',),
+          MapWidget(
+            busStopLatLng: busStopLatLng,
+            markers: [],
+            busRoute: '',
+          ),
           Column(
             children: [
               Spacer(),
@@ -72,14 +77,8 @@ class _BusStopPageState extends State<BusStopPage> {
   }
 
   generateBusList() async {
-    final response =
-        await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas/bus'));
-    List<Bus> busesToAdd = [];
-    List data = jsonDecode(response.body);
-    for (var singleBus in data) {
-      Bus bus = Bus.fromJson(singleBus);
-      busesToAdd.add(bus);
-    }
+    final busesBloc = Provider.of<BusesBloc>(context, listen: false);
+    List<Bus> busesToAdd = busesBloc.state.buses;
     setState(() {
       buses = busesToAdd;
     });
@@ -169,12 +168,15 @@ class _BusStopPageState extends State<BusStopPage> {
                   itemBuilder: (context, index) {
                     final item = buses[index];
                     print(buses);
-                    return (item.proximaParada == busStopName) ?
-                          BusWidget(
+                    return (item.proximaParada == busStopName)
+                        ? BusWidget(
                             bus: item,
                             busStopName: busStopName,
                             busStopLatLng: busStopLatLng,
-                            time: calculateTime(LatLng(item.latitud, item.longitud), busStopLatLng), )
+                            time: calculateTime(
+                                LatLng(item.latitud, item.longitud),
+                                busStopLatLng),
+                          )
                         : SizedBox();
                   },
                 )))

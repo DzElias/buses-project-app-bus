@@ -1,31 +1,31 @@
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
+import 'package:bustracking/commons/models/places_response.dart';
+import 'package:bustracking/services/traffic_service.dart';
+import 'package:equatable/equatable.dart';
+import 'package:latlong2/latlong.dart';
 
 part 'search_event.dart';
 part 'search_state.dart';
 
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
-  SearchBloc() : super(SearchState()) {
+  TrafficService trafficService;
 
+  SearchBloc({required this.trafficService}) : super(const SearchState()) {
+    on<OnActivateManualMarkerEvent>(
+        (event, emit) => emit(state.copyWith(manualSelection: true)));
+    on<OnDeactivateManualMarkerEvent>(
+        (event, emit) => emit(state.copyWith(manualSelection: false)));
 
-    on<OnEnableManualMarker>((event, emit){
+    on<OnNewPlacesFoundEvent>(
+        (event, emit) => emit(state.copyWith(places: event.places)));
 
-      emit(
-        state.copyWith( manualSelection: true)
-      );
-      // TODO: implement event handler
-    });
+    on<AddToHistoryEvent>((event, emit) =>
+        emit(state.copyWith(history: [event.place, ...state.history])));
+  }
 
-    on<OnDisableManualMarker>((event, emit){
+  Future getPlacesByQuery(LatLng proximity, String query) async {
+    final newPlaces = await trafficService.getResultsByQuery(proximity, query);
 
-      emit(
-        state.copyWith( manualSelection: false)
-      );
-      // TODO: implement event handler
-    });
-
-
-
-    
+    add(OnNewPlacesFoundEvent(newPlaces));
   }
 }

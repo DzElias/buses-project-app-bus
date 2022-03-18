@@ -4,16 +4,22 @@ class SearchDestinationResult {
   final bool cancel;
   final bool manual;
   final LatLng? position;
-  final String? desninationName;
+  final String? name;
   final String? description;
 
   SearchDestinationResult({
-
     required this.cancel,
-    required this.manual,
+    this.manual = false,
     this.position,
-    this.desninationName,
-    this.description
-    
+    this.name,
+    this.description,
   });
+
+  // Todo:
+  // name, description, latlon
+
+  @override
+  String toString() {
+    return '{ cancel: $cancel, manual: $manual }';
+  }
 }

@@ -1,124 +1,105 @@
-
-
+import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
+import 'package:bustracking/bloc/search/search_bloc.dart';
 import 'package:bustracking/commons/models/search_destination_result.dart';
-import 'package:bustracking/commons/models/search_response.dart';
-import 'package:bustracking/services/traffic_service.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/Material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 
-class SearchDestination extends SearchDelegate<SearchDestinationResult>{
-
-  @override
-  final String searchFieldLabel;
-  final TrafficService _trafficService;
-  final LatLng proximity;
-
-  SearchDestination(this.proximity): 
-  searchFieldLabel = 'Elige el lugar de destino',
-  this._trafficService = TrafficService();
-
-  @override
-  
-  TextStyle? get searchFieldStyle => TextStyle(color: Colors.black45, fontSize: 16);
-  
+class SearchDestinationDelegate
+    extends SearchDelegate<SearchDestinationResult> {
+  SearchDestinationDelegate(LatLng latLng)
+      : super(searchFieldLabel: 'Buscar...');
 
   @override
   List<Widget>? buildActions(BuildContext context) {
-
-   
-
-    return [IconButton(
-      onPressed: () => query = '', 
-      icon: const Icon(Icons.clear),
-     
-    )];
+    return [
+      IconButton(
+          icon: const Icon(Icons.clear),
+          onPressed: () {
+            query = '';
+          })
+    ];
   }
 
   @override
   Widget? buildLeading(BuildContext context) {
-    SearchDestinationResult searchResult = SearchDestinationResult(cancel: true, manual: false);
     return IconButton(
-      onPressed: () => close(context, searchResult), 
-      icon: const Icon(Icons.arrow_back)
+      icon: const Icon(Icons.arrow_back_ios),
+      onPressed: () {
+        final result = SearchDestinationResult(cancel: true);
+        close(context, result);
+      },
     );
   }
 
   @override
   Widget buildResults(BuildContext context) {
-   
-    
-   return _buildResultsSuggestions();
+    final searchBloc = BlocProvider.of<SearchBloc>(context);
+    final proximity = BlocProvider.of<MyLocationBloc>(context).state.location;
+    searchBloc.getPlacesByQuery(proximity!, query);
+
+    return BlocBuilder<SearchBloc, SearchState>(
+      builder: (context, state) {
+        final places = state.places;
+
+        return ListView.separated(
+          itemCount: places.length,
+          itemBuilder: (context, i) {
+            final place = places[i];
+            return ListTile(
+                title: Text(place.text),
+                subtitle: Text(place.placeName),
+                leading: const Icon(Icons.place_outlined, color: Colors.black),
+                onTap: () {
+                  final result = SearchDestinationResult(
+                      cancel: false,
+                      manual: false,
+                      position: LatLng(place.center[1], place.center[0]),
+                      name: place.text,
+                      description: place.placeName);
+
+                  searchBloc.add(AddToHistoryEvent(place));
+
+                  close(context, result);
+                });
+          },
+          separatorBuilder: (context, i) => const Divider(),
+        );
+      },
+    );
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    final history = BlocProvider.of<SearchBloc>(context).state.history;
 
-    if(this.query.length == 0){
-      return ListView(children: [
-      ListTile(
-        leading: const Icon(Icons.place),
-        title: const Text('Ubicar manualmente en el mapa'),
-        onTap: (){
-          close(context, SearchDestinationResult(cancel: false, manual: true));
-        },
+    return ListView(
+      children: [
+        ListTile(
+            leading:
+                const Icon(Icons.location_on_outlined, color: Colors.black),
+            title: const Text('Colocar la ubicación manualmente',
+                style: TextStyle(color: Colors.black)),
+            onTap: () {
+              final result =
+                  SearchDestinationResult(cancel: false, manual: true);
+              close(context, result);
+            }),
+        ...history.map((place) => ListTile(
+            title: Text(place.text),
+            subtitle: Text(place.placeName),
+            leading: const Icon(Icons.history, color: Colors.black),
+            onTap: () {
+              final result = SearchDestinationResult(
+                  cancel: false,
+                  manual: false,
+                  position: LatLng(place.center[1], place.center[0]),
+                  name: place.text,
+                  description: place.placeName);
 
-      )
-    ],);
-    }
-
-    return _buildResultsSuggestions();
-    
-    
+              close(context, result);
+            }))
+      ],
+    );
   }
-  
-  Widget _buildResultsSuggestions(){
-
-    if(this.query ==0){
-      return Container();
-    }
-    final searchResult = SearchDestinationResult(cancel: true, manual: false);
-
-    return FutureBuilder(
-      
-      future: this._trafficService.getQueryResults(this.query.trim(), this.proximity),
-      builder: (BuildContext context, AsyncSnapshot<SearchResponse> snapshot) {  
-
-        if(!snapshot.hasData){
-          return Center(child: CircularProgressIndicator(),);
-        }
-        
-        final places = snapshot.data!.features;
-        print('places');
-        print(places);
-        if(places.length == 0){
-          return ListTile(
-            title: Text('Direccion no encontrada'),
-          );
-        }
-        
-        
-        return ListView.builder(
-
-          itemCount: places.length,
-          itemBuilder: (BuildContext context, int index) {
-            final place = places[index];
-            return ListTile(
-              leading: Icon(Icons.place) ,
-              title: Text(place.textEs),
-              subtitle: Text(place.placeNameEs),
-              onTap: (){
-                print(place);
-              },
-
-
-            );
-          },
-        );
-
-
-    },);
-
-  }
-
-
 }

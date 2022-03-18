@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:bustracking/bloc/map/map_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
+import 'package:bustracking/bloc/stops/stops_bloc.dart';
 import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
 import 'package:bustracking/commons/widgets/my-location-marker.dart';
@@ -36,7 +37,6 @@ class NearbyBusStopsMap extends StatefulWidget {
 class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
     with TickerProviderStateMixin {
   LatLng _myLocation = LatLng(-25.4978575, -54.6789153);
-  List<BusStop> busStops = [];
   int _selectedIndex = 0;
   List<Marker> markers = [];
 
@@ -57,16 +57,13 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
     final myLocationBloc = Provider.of<MyLocationBloc>(context, listen: false);
     myLocationBloc.startFollowing();
 
-    getBusStops();
+    // getBusStops();
 
     super.initState();
   }
 
   @override
   void dispose() {
-    final myLocationBloc = Provider.of<MyLocationBloc>(context, listen: false);
-    myLocationBloc.cancelFollowing();
-
     animationController.dispose();
     _pageController.dispose();
     super.dispose();
@@ -87,7 +84,8 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
 
                 return FlutterMap(
                   options: MapOptions(
-                    onMapCreated:( controller ) => mapBloc.add(OnMapInitializedEvent(controller)),
+                      onMapCreated: (controller) =>
+                          mapBloc.add(OnMapInitializedEvent(controller)),
                       center: _myLocation,
                       minZoom: 5,
                       zoom: 16,
@@ -123,12 +121,23 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
               return SizedBox();
             },
           ),
-          BlocBuilder<SearchBloc, SearchState>(
+          BlocBuilder<StopsBloc, StopsState>(
             builder: (context, state) {
-              if (state.manualSelection) {
-                return Container();
+              var busStops = state.stops;
+
+              if (busStops.length != 0) {
+                busStops.sort((a, b) => (calculateDistance(a.location))
+                    .compareTo(calculateDistance(b.location)));
+                createBusStopsMarkers(busStops);
               }
-              return pageView(context);
+              return BlocBuilder<SearchBloc, SearchState>(
+                builder: (context, state) {
+                  if (state.manualSelection) {
+                    return Container();
+                  }
+                  return pageView(context, busStops);
+                },
+              );
             },
           )
         ],
@@ -180,7 +189,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
     );
   }
 
-  pageView(BuildContext context) {
+  pageView(BuildContext context, List<BusStop> busStops) {
     return Positioned(
         left: 0,
         right: 0,
@@ -217,28 +226,18 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
             : SizedBox());
   }
 
-  getBusStops() async {
-    final response =
-        await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas'));
-    List data = jsonDecode(response.body);
-    List<BusStop> busStopsTemp = [];
+  // getBusStops() async {
+  //   var stopsBloc = Provider.of<StopsBloc>(context, listen: false);
+  //   await stopsBloc.getStops();
+  //   final List<BusStop> stops =
+  //       Provider.of<StopsBloc>(context, listen: false).state.stops;
+  //   busStops = stops;
+  //   busStops.sort((a, b) => (calculateDistance(a.location))
+  //       .compareTo(calculateDistance(b.location)));
+  //   createBusStopsMarkers();
+  // }
 
-    for (var singleBusStop in data) {
-      BusStop busStop = (BusStop(
-          id: singleBusStop['_id'],
-          title: singleBusStop['titulo'],
-          location: LatLng(singleBusStop['latitud'].toDouble(),
-              singleBusStop['longitud'].toDouble()),
-          adress: singleBusStop['direccion'],
-          imageLink: singleBusStop['imagen']));
-      busStops.add(busStop);
-    }
-    busStops.sort((a, b) => (calculateDistance(a.location))
-        .compareTo(calculateDistance(b.location)));
-    createBusStopsMarkers();
-  }
-
-  createBusStopsMarkers() {
+  createBusStopsMarkers(List<BusStop> busStops) {
     for (int i = 0; i < busStops.length; i++) {
       final mapItem = busStops[i];
       markers.add(Marker(
@@ -249,7 +248,8 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
             return GestureDetector(
                 onTap: () async {
                   _selectedIndex = i;
-                  MapController mapController = BlocProvider.of<MapBloc>(context).mapController;
+                  MapController mapController =
+                      BlocProvider.of<MapBloc>(context).mapController;
                   animatedMapMove(mapItem.location, mapController.zoom);
                   busStops.isNotEmpty
                       ? setState(() {
@@ -265,11 +265,11 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                 ));
           }));
     }
-    setState(() {});
   }
 
   animatedMapMove(LatLng destLocation, double destZoom) {
-    MapController mapController = BlocProvider.of<MapBloc>(context).mapController;
+    MapController mapController =
+        BlocProvider.of<MapBloc>(context).mapController;
     // Create some tweens. These serve to split up the transition from one location to another.
     // In our case, we want to split the transition be<tween> our current map center and the destination.
     final _latTween = Tween<double>(

@@ -20,8 +20,9 @@ class ManualMarker extends StatelessWidget {
               backgroundColor: Colors.white,
               child: IconButton(
                   onPressed: () {
-                    final searchBloc = Provider.of<SearchBloc>(context, listen: false);
-                    searchBloc.add(OnDisableManualMarker());
+                    final searchBloc =
+                        Provider.of<SearchBloc>(context, listen: false);
+                    searchBloc.add(OnDeactivateManualMarkerEvent());
                   },
                   icon: Icon(
                     Icons.arrow_back,
@@ -32,8 +33,7 @@ class ManualMarker extends StatelessWidget {
           child: Transform.translate(
               offset: Offset(0, -20),
               child: BounceInDown(
-                from:  200,
-                
+                from: 200,
                 child: Icon(
                   Icons.place,
                   size: 50,
@@ -52,7 +52,8 @@ class ManualMarker extends StatelessWidget {
             color: Colors.green,
             elevation: 0,
             onPressed: () {},
-            child: Text('Confirmar destino',
+            child: Text(
+              'Confirmar destino',
               style: TextStyle(fontSize: 18, color: Colors.white),
             ),
           ),

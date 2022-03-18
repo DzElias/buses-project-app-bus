@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
-import '../../pages/bus-page/widgets/bus-route.dart';
-
 class PanelWidget extends StatelessWidget {
   final ScrollController controller;
   final PanelController panelController;
   final Widget panelContent;
-  
-  const PanelWidget({
-    Key? key,
-    required this.controller,
-    required this.panelController,
-    required this.panelContent
-  }) : super(key: key);
+
+  const PanelWidget(
+      {Key? key,
+      required this.controller,
+      required this.panelController,
+      required this.panelContent})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) => ListView(
@@ -31,17 +29,17 @@ class PanelWidget extends StatelessWidget {
   }
 
   buildDragHandle() => GestureDetector(
-    
-    child: Center(
-          child: Container(
-            width: 30,
-            height: 5,
-            decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(12)),
-          ),
+      child: Center(
+        child: Container(
+          width: 30,
+          height: 5,
+          decoration: BoxDecoration(
+              color: Colors.grey, borderRadius: BorderRadius.circular(12)),
         ),
-    onTap: togglePanel
-  );
+      ),
+      onTap: togglePanel);
 
   void togglePanel() => panelController.isPanelOpen
-   ? panelController.close() : panelController.open();
+      ? panelController.close()
+      : panelController.open();
 }

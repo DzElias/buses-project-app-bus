@@ -1,7 +1,12 @@
+import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/bloc/map/map_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
+import 'package:bustracking/bloc/stops/stops_bloc.dart';
 import 'package:bustracking/routes.dart';
+import 'package:bustracking/services/bus_service.dart';
+import 'package:bustracking/services/stops_service.dart';
+import 'package:bustracking/services/traffic_service.dart';
 import 'package:flutter/Material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -17,18 +22,28 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    MediaQueryData windowData = MediaQueryData.fromWindow(WidgetsBinding.instance!.window);
+    MediaQueryData windowData =
+        MediaQueryData.fromWindow(WidgetsBinding.instance!.window);
     windowData = windowData.copyWith(
-      textScaleFactor: windowData.textScaleFactor > 1.0 ? 1.0 : windowData.textScaleFactor,
+      textScaleFactor:
+          windowData.textScaleFactor > 1.0 ? 1.0 : windowData.textScaleFactor,
     );
 
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => SocketService()),
           BlocProvider(create: (_) => MyLocationBloc()),
-          BlocProvider(create: (_) => SearchBloc()),
+          BlocProvider(
+              create: (_) => SearchBloc(trafficService: TrafficService())),
           BlocProvider(create: (_) => MapBloc()),
+          BlocProvider(create: (_) => StopsBloc(stopService: StopService())),
+          BlocProvider(create: (_) => BusesBloc(busService: BusService()))
         ],
         child: MediaQuery(
           data: windowData,

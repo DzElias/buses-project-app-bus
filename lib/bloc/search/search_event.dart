@@ -1,9 +1,22 @@
 part of 'search_bloc.dart';
 
-@immutable
-abstract class SearchEvent {}
+abstract class SearchEvent extends Equatable {
+  const SearchEvent();
 
-class OnEnableManualMarker extends SearchEvent{}
+  @override
+  List<Object> get props => [];
+}
 
-class OnDisableManualMarker extends SearchEvent{}
+class OnActivateManualMarkerEvent extends SearchEvent {}
 
+class OnDeactivateManualMarkerEvent extends SearchEvent {}
+
+class OnNewPlacesFoundEvent extends SearchEvent {
+  final List<Feature> places;
+  const OnNewPlacesFoundEvent(this.places);
+}
+
+class AddToHistoryEvent extends SearchEvent {
+  final Feature place;
+  const AddToHistoryEvent(this.place);
+}

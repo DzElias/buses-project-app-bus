@@ -36,35 +36,28 @@ class _BusPageState extends State<BusPage> {
 
   @override
   void initState() {
-    final socketService = Provider.of<SocketService>(context, listen: false);
-    socketService.socket.connect();
-    socketService.socket.on('change-locationReturn', handleBusLocation);
     super.initState();
   }
 
   @override
   void dispose() {
-    final socketService = Provider.of<SocketService>(context, listen: false);
-    socketService.socket.off('change-locationReturn');
-    socketService.socket.disconnect();
-
     super.dispose();
   }
 
-  handleBusLocation(dynamic payload) {
-    print(
-        '<<<<<<<<<<-------Payload de change-LocationReturn--------->>>>>>>>>>>>>');
-    print(payload);
-    String payloadId = payload[0];
-    if (payloadId == busID) {
-      puntos.clear();
-      puntos.add(LatLng(
-        double.parse(payload[1]),
-        double.parse(payload[2]),
-      ));
-    }
-    setState(() {});
-  }
+  // handleBusLocation(dynamic payload) {
+  //   print(
+  //       '<<<<<<<<<<-------Payload de change-LocationReturn--------->>>>>>>>>>>>>');
+  //   print(payload);
+  //   String payloadId = payload[0];
+  //   if (payloadId == busID) {
+  //     puntos.clear();
+  //     puntos.add(LatLng(
+  //       double.parse(payload[1]),
+  //       double.parse(payload[2]),
+  //     ));
+  //   }
+  //   setState(() {});
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +85,7 @@ class _BusPageState extends State<BusPage> {
     final LatLng busStopLatLng = args.busStopLatLng;
 
     final busLatLng = LatLng(bus.latitud, bus.longitud);
-    
+
     busID = args.bus.id;
 
     // final String ruta = '${args.primeraParada} hasta ${args.ultimaParada}';
@@ -108,12 +101,11 @@ class _BusPageState extends State<BusPage> {
           alignment: Alignment.topCenter,
           children: [
             MapWidget(
-              markers: markers,
-              busStopLatLng: busStopLatLng,
-
-              busRoute: bus.ruta
-            ),
-            slidingUpPanel(panelHeightOpen, panelHeightClosed, busStopName, bus),
+                markers: markers,
+                busStopLatLng: busStopLatLng,
+                busRoute: bus.ruta),
+            slidingUpPanel(
+                panelHeightOpen, panelHeightClosed, busStopName, bus),
             Positioned(
                 right: 20, bottom: fabHeight, child: waitButton(busStopLatLng))
           ],
@@ -149,7 +141,8 @@ class _BusPageState extends State<BusPage> {
     }
   }
 
-  appbarTitle(String busName, LatLng busLatLng, LatLng busStopLatLng, String lineaBus) {
+  appbarTitle(
+      String busName, LatLng busLatLng, LatLng busStopLatLng, String lineaBus) {
     return Column(
       children: [
         Row(
@@ -182,9 +175,8 @@ class _BusPageState extends State<BusPage> {
     );
   }
 
-  Widget slidingUpPanel(double panelHeightOpen, double panelHeightClosed,String busStopName,Bus bus) {
-    
-
+  Widget slidingUpPanel(double panelHeightOpen, double panelHeightClosed,
+      String busStopName, Bus bus) {
     List route = bus.paradas;
     bool onnOrOff = false;
     var paradas = route.map((parada) {

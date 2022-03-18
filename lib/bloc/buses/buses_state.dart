@@ -1,6 +1,19 @@
 part of 'buses_bloc.dart';
 
-@immutable
-abstract class BusesState {}
+class BusesState extends Equatable {
+  final List<Bus> buses;
 
-class BusesInitial extends BusesState {}
+  const BusesState({
+    this.buses = const [],
+  });
+
+  BusesState copyWith({
+    List<Bus>? buses,
+  }) =>
+      BusesState(
+        buses: buses ?? this.buses,
+      );
+
+  @override
+  List<Object> get props => [buses];
+}

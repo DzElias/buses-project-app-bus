@@ -1,14 +1,13 @@
-import 'dart:convert';
-
+import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/commons/models/bus.dart';
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
 
 import 'package:bustracking/commons/widgets/main_drawer.dart';
 import 'package:bustracking/helpers/cachedTileProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter_map/flutter_map.dart';
-import 'package:http/http.dart';
 import 'package:latlong2/latlong.dart';
 
 const MAPBOX_ACCESS_TOKEN =
@@ -23,11 +22,9 @@ class SearchBus extends StatefulWidget {
 class _SearchBusState extends State<SearchBus> {
   @override
   void initState() {
-    getActiveBuses();
     super.initState();
   }
 
-  List<Marker> busMarkers = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,25 +43,30 @@ class _SearchBusState extends State<SearchBus> {
         drawer: MainDrawer(),
         body: Stack(
           children: [
-            FlutterMap(
-              options: MapOptions(
-                  center: LatLng(-25.5161428, -54.6418963),
-                  zoom: 12,
-                  minZoom: 6,
-                  maxZoom: 16,
-                  interactiveFlags:
-                      InteractiveFlag.all & ~InteractiveFlag.rotate),
-              layers: [
-                TileLayerOptions(
-                    urlTemplate:
-                        "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
-                    additionalOptions: {
-                      'accessToken': MAPBOX_ACCESS_TOKEN,
-                      'id': MAPBOX_STYLE
-                    },
-                    tileProvider: const CachedTileProvider()),
-                MarkerLayerOptions(markers: busMarkers),
-              ],
+            BlocBuilder<BusesBloc, BusesState>(
+              builder: (context, state) {
+                List<Bus> buses = state.buses;
+                return FlutterMap(
+                  options: MapOptions(
+                      center: LatLng(-25.5161428, -54.6418963),
+                      zoom: 12,
+                      minZoom: 6,
+                      maxZoom: 16,
+                      interactiveFlags:
+                          InteractiveFlag.all & ~InteractiveFlag.rotate),
+                  layers: [
+                    TileLayerOptions(
+                        urlTemplate:
+                            "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
+                        additionalOptions: {
+                          'accessToken': MAPBOX_ACCESS_TOKEN,
+                          'id': MAPBOX_STYLE
+                        },
+                        tileProvider: const CachedTileProvider()),
+                    MarkerLayerOptions(markers: getActiveBuses(buses)),
+                  ],
+                );
+              },
             ),
             searchBusContainer(),
           ],
@@ -114,34 +116,17 @@ class _SearchBusState extends State<SearchBus> {
     );
   }
 
-  getActiveBuses() async {
-    List<Bus> buses = await generateBusList();
+  List<Marker> getActiveBuses(List<Bus> buses) {
     List<Marker> markerList = [];
     for (var bus in buses) {
-      markerList.add(
-        Marker(
+      markerList.add(Marker(
           point: LatLng(bus.latitud, bus.longitud),
           key: Key(bus.id),
           builder: (_) => const Center(
                   child: Image(
-                    image: AssetImage('assets/bus_point.png'),
-                    
-                  ))));
+                image: AssetImage('assets/bus_point.png'),
+              ))));
     }
-    setState(() {
-      busMarkers = markerList;
-    });
-  }
-
-  generateBusList() async {
-    final response =
-        await get(Uri.parse('https://milab-cde.herokuapp.com/coordenadas/bus'));
-    List<Bus> buses = [];
-    List data = jsonDecode(response.body);
-    for (var singleBus in data) {
-      Bus bus = Bus.fromJson(singleBus);
-      buses.add(bus);
-    }
-    return buses;
+    return markerList;
   }
 }
