@@ -51,6 +51,7 @@ class _BusStopPageState extends State<BusStopPage> {
     final String busStopAdress = args.busStopAdress;
     final String time = args.time;
     final LatLng busStopLatLng = args.busStopLatLng;
+    final String stopId = args.stopId;
 
     return Scaffold(
       appBar:
@@ -66,7 +67,7 @@ class _BusStopPageState extends State<BusStopPage> {
             children: [
               Spacer(),
               buses.isNotEmpty
-                  ? slidingUpPanel(busStopName, context, busStopLatLng)
+                  ? slidingUpPanel(stopId, context, busStopLatLng, busStopName)
                   : SizedBox(),
               SizedBox(height: 10)
             ],
@@ -133,8 +134,8 @@ class _BusStopPageState extends State<BusStopPage> {
     );
   }
 
-  slidingUpPanel(
-      String busStopName, BuildContext context, LatLng busStopLatLng) {
+  slidingUpPanel(String stopId, BuildContext context, LatLng busStopLatLng,
+      String stopName) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 10),
       child: Column(children: [
@@ -167,11 +168,10 @@ class _BusStopPageState extends State<BusStopPage> {
                   itemCount: buses.length,
                   itemBuilder: (context, index) {
                     final item = buses[index];
-                    print(buses);
-                    return (item.proximaParada == busStopName)
+                    return (item.proximaParada == stopId)
                         ? BusWidget(
                             bus: item,
-                            busStopName: busStopName,
+                            busStopName: stopName,
                             busStopLatLng: busStopLatLng,
                             time: calculateTime(
                                 LatLng(item.latitud, item.longitud),
@@ -210,54 +210,4 @@ class _BusStopPageState extends State<BusStopPage> {
       return time;
     }
   }
-
-  // busesApproachingContainer() {
-  //   return Column(
-  //     children: [
-  //       Container(
-  //           alignment: Alignment.center,
-  //           width: double.infinity,
-  //           padding: EdgeInsets.symmetric(vertical: 20),
-  //           decoration: BoxDecoration(
-  //               color: Colors.white, borderRadius: BorderRadius.circular(20.0)),
-  //           child: Text('Buses acercándose',
-  //               style: TextStyle(
-  //                 fontSize: 20,
-  //               ))),
-
-  //       buses.isNotEmpty
-  //           ? Center(
-  //               child: Text('Hay buses'),
-  //             )
-  //           : Center(
-  //               child: Text('No hay buses acercandose'),
-  //             )
-
-  // Column(
-  //   children: [
-  //     BusWidget(
-  //       busName: 'Linea 270 Mburucuya Poty',
-  //       busRoutes: 'Km 7 Monday hasta Barrio 23 de Octubre',
-  //       time: '05 min',
-  //     ),
-  //     BusWidget(
-  //       busName: 'Linea 270 Mburucuya Poty',
-  //       busRoutes: 'Km 7 Monday hasta Barrio 23 de Octubre',
-  //       time: '05 min',
-  //     ),
-  //     BusWidget(
-  //       busName: 'Linea 270 Mburucuya Poty',
-  //       busRoutes: 'Km 7 Monday hasta Barrio 23 de Octubre',
-  //       time: '05 min',
-  //     ),
-  //     BusWidget(
-  //       busName: 'Linea 270 Mburucuya Poty',
-  //       busRoutes: 'Km 7 Monday hasta Barrio 23 de Octubre',
-  //       time: '05 min',
-  //     ),
-  //   ],
-  // ),
-  //   ],
-  // );
-  // }
 }

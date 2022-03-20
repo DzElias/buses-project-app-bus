@@ -9,22 +9,21 @@ class StopDetails extends StatelessWidget {
   final bool isNearest;
   final int distanceInMeters;
   final String time;
- 
-  const StopDetails(
-      {Key? key,
-      required this.distanceInMeters,
-      required this.busStop,
-      required this.time,
-     
-      
-      this.isNearest = false, })
-      : super(key: key);
-  
+
+  const StopDetails({
+    Key? key,
+    required this.distanceInMeters,
+    required this.busStop,
+    required this.time,
+    this.isNearest = false,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
         padding: const EdgeInsets.all(15.0),
         child: CustomCard(
+          stopId: busStop.id,
           stopLatLng: busStop.location,
           isNearest: isNearest,
           stopName: busStop.title,
@@ -34,7 +33,6 @@ class StopDetails extends StatelessWidget {
           time: '(${time})',
           imageLink: busStop.imageLink,
           stopAdress: busStop.adress,
-          
         ));
   }
 }

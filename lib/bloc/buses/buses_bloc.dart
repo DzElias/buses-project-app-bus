@@ -14,10 +14,12 @@ class BusesBloc extends Bloc<BusesEvent, BusesState> {
     on<OnBusUpdateEvent>((event, emit) {
       final buses = state.buses;
       int index = buses.indexWhere((element) => element.id == event.id);
-      buses[index].latitud = event.lat;
-      buses[index].longitud = event.long;
+      if (index >= 0) {
+        buses[index].latitud = event.lat;
+        buses[index].longitud = event.long;
 
-      emit(state.copyWith(buses: buses));
+        emit(state.copyWith(buses: buses));
+      }
     });
   }
 

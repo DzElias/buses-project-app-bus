@@ -4,11 +4,13 @@ import 'package:bustracking/commons/widgets/custom-appbar.dart';
 
 import 'package:bustracking/commons/widgets/main_drawer.dart';
 import 'package:bustracking/helpers/cachedTileProvider.dart';
+import 'package:bustracking/search/search_bus_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
 
 const MAPBOX_ACCESS_TOKEN =
     'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3d4eDQ3OTcwaHk3Mm51cjNmcWRvZjA2In0.AAF794oxyxFR_-wAvVwMfQ';
@@ -19,10 +21,18 @@ class SearchBus extends StatefulWidget {
   State<SearchBus> createState() => _SearchBusState();
 }
 
-class _SearchBusState extends State<SearchBus> {
+class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
+  final mapController = MapController();
+
+  String? id;
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -47,6 +57,7 @@ class _SearchBusState extends State<SearchBus> {
               builder: (context, state) {
                 List<Bus> buses = state.buses;
                 return FlutterMap(
+                  mapController: mapController,
                   options: MapOptions(
                       center: LatLng(-25.5161428, -54.6418963),
                       zoom: 12,
@@ -69,6 +80,7 @@ class _SearchBusState extends State<SearchBus> {
               },
             ),
             searchBusContainer(),
+            (id != null) ? trackBus(id) : SizedBox()
           ],
         ));
   }
@@ -79,8 +91,16 @@ class _SearchBusState extends State<SearchBus> {
       child: Align(
         alignment: Alignment.topCenter,
         child: ElevatedButton(
-          onPressed: () {
-            //TODO abrir buscador de buses
+          onPressed: () async {
+            var result = await showSearch(
+              context: context,
+              delegate: BusSearch(),
+            );
+            if (result != "") {
+              setState(() {
+                id = result;
+              });
+            }
           },
           child: SizedBox(
             width: 300,
@@ -120,6 +140,8 @@ class _SearchBusState extends State<SearchBus> {
     List<Marker> markerList = [];
     for (var bus in buses) {
       markerList.add(Marker(
+          width: 60,
+          height: 60,
           point: LatLng(bus.latitud, bus.longitud),
           key: Key(bus.id),
           builder: (_) => const Center(
@@ -128,5 +150,61 @@ class _SearchBusState extends State<SearchBus> {
               ))));
     }
     return markerList;
+  }
+
+  trackBus(String? id) {
+    return BlocBuilder<BusesBloc, BusesState>(
+      builder: (context, state) {
+        var buses = state.buses;
+        int index = buses.indexWhere((element) => element.id == id);
+        if (index >= 0) {
+          Bus bus = buses[index];
+
+          var busLatLng = LatLng(bus.latitud, bus.longitud);
+          print("hola");
+
+          double zoom = mapController.zoom;
+          if (zoom < 16) {
+            zoom = 16.0;
+          }
+          animatedMapMove(busLatLng, zoom);
+        }
+
+        return Container();
+      },
+    );
+  }
+
+  animatedMapMove(LatLng destLocation, double destZoom) {
+    // Create some tweens. These serve to split up the transition from one location to another.
+    // In our case, we want to split the transition be<tween> our current map center and the destination.
+    final _latTween = Tween<double>(
+        begin: mapController.center.latitude, end: destLocation.latitude);
+    final _lngTween = Tween<double>(
+        begin: mapController.center.longitude, end: destLocation.longitude);
+    final _zoomTween = Tween<double>(begin: mapController.zoom, end: destZoom);
+
+    // Create a animation controller that has a duration and a TickerProvider.
+    var controller = AnimationController(
+        duration: const Duration(milliseconds: 500), vsync: this);
+    // The animation determines what path the animation will take. You can try different Curves values, although I found
+    // fastOutSlowIn to be my favorite.
+    Animation<double> animation =
+        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
+
+    controller.addListener(() {
+      mapController.move(
+          LatLng(_latTween.evaluate(animation), _lngTween.evaluate(animation)),
+          _zoomTween.evaluate(animation));
+    });
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+      } else if (status == AnimationStatus.dismissed) {
+        controller.dispose();
+      }
+    });
+
+    controller.forward();
   }
 }

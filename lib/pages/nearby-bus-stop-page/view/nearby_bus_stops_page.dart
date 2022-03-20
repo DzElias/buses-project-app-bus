@@ -41,8 +41,6 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
 
   LatLng myLocation = LatLng(0, 0);
 
-  List<Marker> markers = [];
-
   @override
   void initState() {
     final busesBloc = Provider.of<BusesBloc>(context, listen: false);

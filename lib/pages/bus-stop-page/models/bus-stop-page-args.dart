@@ -6,10 +6,11 @@ import 'package:latlong2/latlong.dart';
 
 class BusStopPageArguments {
   final String busStopName;
+
   final String busStopAdress;
   final String time;
   final LatLng busStopLatLng;
-
-
-  BusStopPageArguments( this.busStopName, this.busStopAdress, this.time, this.busStopLatLng);
+  final String stopId;
+  BusStopPageArguments(this.busStopName, this.busStopAdress, this.time,
+      this.busStopLatLng, this.stopId);
 }

@@ -12,7 +12,9 @@ class BusService {
     List data = jsonDecode(response.body);
     for (var singleBus in data) {
       Bus bus = Bus.fromJson(singleBus);
+      // if (bus.activo) {
       busesToAdd.add(bus);
+      // }
     }
     buses = busesToAdd;
     return buses;

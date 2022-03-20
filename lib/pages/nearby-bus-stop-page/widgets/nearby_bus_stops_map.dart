@@ -11,12 +11,12 @@ import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
 import 'package:bustracking/commons/widgets/my-location-marker.dart';
 import 'package:bustracking/helpers/cachedTileProvider.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/stop_details.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
 
-import 'package:http/http.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
@@ -38,11 +38,11 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
     with TickerProviderStateMixin {
   LatLng _myLocation = LatLng(-25.4978575, -54.6789153);
   int _selectedIndex = 0;
-  List<Marker> markers = [];
 
   final _pageController = PageController();
   late final AnimationController animationController;
   // late final MapController mapController;
+  List<Marker> markers = [];
 
   @override
   void initState() {
@@ -84,8 +84,9 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
 
                 return FlutterMap(
                   options: MapOptions(
-                      onMapCreated: (controller) =>
-                          mapBloc.add(OnMapInitializedEvent(controller)),
+                      onMapCreated: (controller) {
+                        mapBloc.add(OnMapInitializedEvent(controller));
+                      },
                       center: _myLocation,
                       minZoom: 5,
                       zoom: 16,
@@ -125,11 +126,12 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
             builder: (context, state) {
               var busStops = state.stops;
 
-              if (busStops.length != 0) {
+              if (busStops.isNotEmpty) {
                 busStops.sort((a, b) => (calculateDistance(a.location))
                     .compareTo(calculateDistance(b.location)));
                 createBusStopsMarkers(busStops);
               }
+
               return BlocBuilder<SearchBloc, SearchState>(
                 builder: (context, state) {
                   if (state.manualSelection) {
@@ -205,8 +207,8 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                     controller: _pageController,
                     physics: NeverScrollableScrollPhysics(),
                     itemCount: busStops.length,
-                    itemBuilder: (context, index) {
-                      final item = busStops[index];
+                    itemBuilder: (context, i) {
+                      final item = busStops[i];
                       int nearestStopIndex = 0;
                       int menDistance = 100000;
                       for (int i = 0; i < busStops.length; i++) {
@@ -218,7 +220,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                       }
                       return StopDetails(
                           busStop: item,
-                          isNearest: index == nearestStopIndex,
+                          isNearest: i == nearestStopIndex,
                           distanceInMeters: calculateDistance(item.location),
                           time: calculateTime(item.location));
                     }),
@@ -238,19 +240,23 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
   // }
 
   createBusStopsMarkers(List<BusStop> busStops) {
-    for (int i = 0; i < busStops.length; i++) {
-      final mapItem = busStops[i];
-      markers.add(Marker(
+    int i = 0;
+    List<Marker> _markerList = [];
+    for (var stop in busStops) {
+      // for (int i = 0; i < busStops.length; i++) {
+      //   final mapItem = busStops[i];
+
+      _markerList.add(Marker(
           height: MARKER_SIZE_EXPANDED,
           width: MARKER_SIZE_EXPANDED,
-          point: mapItem.location,
+          point: stop.location,
           builder: (_) {
             return GestureDetector(
                 onTap: () async {
                   _selectedIndex = i;
                   MapController mapController =
                       BlocProvider.of<MapBloc>(context).mapController;
-                  animatedMapMove(mapItem.location, mapController.zoom);
+                  animatedMapMove(stop.location, mapController.zoom);
                   busStops.isNotEmpty
                       ? setState(() {
                           _pageController.animateToPage(i,
@@ -259,12 +265,16 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                         })
                       : () {};
                 },
-                // child: Icon(Icons.place),
                 child: BusStopMarker(
                   selected: _selectedIndex == i,
                 ));
           }));
+      i++;
     }
+    markers = _markerList;
+    Future.delayed(Duration(seconds: 3)).then((value) {
+      setState(() {});
+    });
   }
 
   animatedMapMove(LatLng destLocation, double destZoom) {
