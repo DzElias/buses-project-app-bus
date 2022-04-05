@@ -17,7 +17,7 @@ class Logo extends StatelessWidget {
         child: Column(
           // ignore: prefer_const_literals_to_create_immutables
           children: [
-            const Image(image: AssetImage("assets/images/bus.png")),
+            const Image(image: AssetImage("assets/bus.png")),
             // ignore: prefer_const_constructors
             SizedBox(
               height: 20,

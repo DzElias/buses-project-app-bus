@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:bustracking/commons/models/bus.dart';
 import 'package:bustracking/services/bus_service.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/Material.dart';
 
 part 'buses_event.dart';
 part 'buses_state.dart';
@@ -29,6 +30,16 @@ class BusesBloc extends Bloc<BusesEvent, BusesState> {
   }
 
   handleBusLocation(dynamic payload) {
-    add(OnBusUpdateEvent(payload[0], payload[1], payload[2]));
+    final buses = state.buses;
+    int index = buses.indexWhere((element) => element.id == payload[0]);
+    if (index >= 0) {
+      String lat = payload[1];
+      String long = payload[2];
+      print("$lat $long");
+      buses[index].latitud = double.parse(lat);
+      buses[index].longitud = double.parse(long);
+
+      add(OnBusesFoundEvent(buses));
+    }
   }
 }

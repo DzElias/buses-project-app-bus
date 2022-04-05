@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/services/stops_service.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 
 part 'stops_event.dart';
 part 'stops_state.dart';

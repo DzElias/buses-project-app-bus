@@ -1,11 +1,8 @@
 import 'dart:convert';
 
 import 'package:bustracking/commons/models/busStop.dart';
-import 'package:bustracking/services/places_interceptor.dart';
-import 'package:dio/dio.dart';
 import 'package:http/http.dart';
 
-import '../commons/models/places_response.dart';
 import 'package:latlong2/latlong.dart';
 
 class StopService {
@@ -26,8 +23,5 @@ class StopService {
       busStops.add(busStop);
     }
     return busStops;
-
-    // busStops.sort((a, b) => (calculateDistance(a.location))
-    //     .compareTo(calculateDistance(b.location)));
   }
 }

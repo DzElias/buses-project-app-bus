@@ -3,17 +3,15 @@
 // a customizable title and message.
 
 import 'package:bustracking/commons/models/bus.dart';
+import 'package:bustracking/commons/models/busStop.dart';
 import 'package:latlong2/latlong.dart';
 
 class BusPageArguments {
   final Bus bus;
-  final LatLng busStopLatLng;
-  final String busStopName;
-  
+  final BusStop stop;
 
   BusPageArguments({
-    required this.bus, 
-    required this.busStopName,
-    required this.busStopLatLng
+    required this.bus,
+    required this.stop,
   });
 }

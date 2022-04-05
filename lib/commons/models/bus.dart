@@ -1,8 +1,3 @@
-// To parse this JSON data, do
-//
-//     final bus = busFromJson(jsonString);
-
-import 'package:meta/meta.dart';
 import 'dart:convert';
 
 Bus busFromJson(String str) => Bus.fromJson(json.decode(str));

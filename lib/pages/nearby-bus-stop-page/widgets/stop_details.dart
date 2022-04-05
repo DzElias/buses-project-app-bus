@@ -2,8 +2,6 @@ import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/custom-card.dart';
 import 'package:flutter/material.dart';
 
-import 'package:latlong2/latlong.dart';
-
 class StopDetails extends StatelessWidget {
   final BusStop busStop;
   final bool isNearest;

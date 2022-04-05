@@ -1,7 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 class ManualMarker extends StatelessWidget {

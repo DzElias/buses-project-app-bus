@@ -1,16 +1,10 @@
-import 'dart:convert';
-
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/busStop.dart';
-import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
 import 'package:bustracking/commons/widgets/my-location-marker.dart';
-import 'package:bustracking/helpers/cachedTileProvider.dart';
 import 'package:bustracking/pages/bus-stop-page/models/walking_route.dart';
+import 'package:bustracking/utils/cachedTileProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:http/http.dart';
 
 import 'package:latlong2/latlong.dart';
 
@@ -209,8 +203,6 @@ class _BusStopPageMapState extends State<BusStopPageMap>
 
     final data = WalkingRoute.fromJson(resp.data);
     final geometry = data.routes[0].geometry;
-    final duracion = data.routes[0].duration;
-    final distancia = data.routes[0].distance;
     final points = polylinePoints.decodePolyline(geometry);
 
     setState(() {

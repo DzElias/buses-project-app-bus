@@ -5,13 +5,13 @@ import 'package:bustracking/bloc/search/search_bloc.dart';
 import 'package:bustracking/bloc/stops/stops_bloc.dart';
 import 'package:bustracking/routes.dart';
 import 'package:bustracking/services/bus_service.dart';
+import 'package:bustracking/services/socket_service.dart';
 import 'package:bustracking/services/stops_service.dart';
 import 'package:bustracking/services/traffic_service.dart';
+
 import 'package:flutter/Material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-
-import '../services/socket_service.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -37,7 +37,7 @@ class _MyAppState extends State<MyApp> {
 
     return MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => SocketService()),
+          ChangeNotifierProvider(create: (_) => SocketService()..socket.connect()),
           BlocProvider(create: (_) => MyLocationBloc()),
           BlocProvider(
               create: (_) => SearchBloc(trafficService: TrafficService())),
@@ -45,14 +45,18 @@ class _MyAppState extends State<MyApp> {
           BlocProvider(create: (_) => StopsBloc(stopService: StopService())),
           BlocProvider(create: (_) => BusesBloc(busService: BusService()))
         ],
-        child: MediaQuery(
-          data: windowData,
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'Bus Tracking App',
-            initialRoute: 'nearby-bus-stop-page',
-            routes: appRoutes,
-          ),
-        ));
+        child: Builder(builder: (context) {
+          return MediaQuery(
+            data: windowData,
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'Bus Tracking App',
+              initialRoute: 'nearby-bus-stop-page',
+              routes: appRoutes,
+            ),
+          );
+        }));
   }
+
+  
 }

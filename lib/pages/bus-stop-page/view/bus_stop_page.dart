@@ -1,23 +1,20 @@
-import 'dart:convert';
+// ignore_for_file: unnecessary_import
 
 import 'package:bustracking/bloc/buses/buses_bloc.dart';
+import 'package:bustracking/bloc/stops/stops_bloc.dart';
 import 'package:bustracking/commons/models/bus.dart';
+import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/commons/widgets/map.dart';
 import 'package:bustracking/pages/bus-stop-page/models/bus-stop-page-args.dart';
-import 'package:bustracking/pages/bus-stop-page/widgets/bus_stop_page_map.dart';
 
 import 'package:bustracking/pages/bus-stop-page/widgets/bus_widget.dart';
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
-import 'package:bustracking/services/socket_service.dart';
-import 'package:bustracking/commons/widgets/panel_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:latlong2/latlong.dart';
 
 class BusStopPage extends StatefulWidget {
@@ -67,7 +64,7 @@ class _BusStopPageState extends State<BusStopPage> {
             children: [
               Spacer(),
               buses.isNotEmpty
-                  ? slidingUpPanel(stopId, context, busStopLatLng, busStopName)
+                  ? slidingUpPanel(stopId, context, busStopLatLng)
                   : SizedBox(),
               SizedBox(height: 10)
             ],
@@ -134,8 +131,7 @@ class _BusStopPageState extends State<BusStopPage> {
     );
   }
 
-  slidingUpPanel(String stopId, BuildContext context, LatLng busStopLatLng,
-      String stopName) {
+  slidingUpPanel(String stopId, BuildContext context, LatLng busStopLatLng) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 10),
       child: Column(children: [
@@ -171,8 +167,7 @@ class _BusStopPageState extends State<BusStopPage> {
                     return (item.proximaParada == stopId)
                         ? BusWidget(
                             bus: item,
-                            busStopName: stopName,
-                            busStopLatLng: busStopLatLng,
+                            stop: stopById(stopId),
                             time: calculateTime(
                                 LatLng(item.latitud, item.longitud),
                                 busStopLatLng),
@@ -182,6 +177,13 @@ class _BusStopPageState extends State<BusStopPage> {
                 )))
       ]),
     );
+  }
+  BusStop stopById(stopID) {
+    final stops = Provider.of<StopsBloc>(context, listen: false).state.stops;
+
+    int index = stops.indexWhere((element) => stopID == element.id);
+    var stop = stops[index];
+    return stop;
   }
 
   calculateDistance(LatLng point, LatLng myLocation) {

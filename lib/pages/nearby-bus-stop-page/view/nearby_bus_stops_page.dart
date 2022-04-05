@@ -4,7 +4,6 @@ import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
 import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/manual_marker.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/nearby_bus_stops_map.dart';
 
@@ -16,7 +15,7 @@ import 'package:bustracking/services/socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -43,17 +42,9 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
 
   @override
   void initState() {
-    final busesBloc = Provider.of<BusesBloc>(context, listen: false);
-    busesBloc.getBuses();
-    final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
-    stopsBloc.getStops();
-
-    final socketService = Provider.of<SocketService>(context, listen: false);
-    socketService.socket.connect();
-    socketService.socket
-        .on('change-locationReturn', busesBloc.handleBusLocation);
-
     WidgetsBinding.instance?.addObserver(this);
+
+    initialization();
 
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -141,6 +132,17 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
         );
       },
     );
+  }
+
+  initialization() {
+    final busesBloc = Provider.of<BusesBloc>(context, listen: false);
+    busesBloc.getBuses();
+    final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
+    stopsBloc.getStops();
+    final socketService = Provider.of<SocketService>(context, listen: false);
+    socketService.socket.connect();
+    socketService.socket.on('change-locationReturn', busesBloc.handleBusLocation);
+    FlutterNativeSplash.remove();
   }
 
   checkGpsAccess(BuildContext context) async {

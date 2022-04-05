@@ -1,4 +1,5 @@
 import 'package:bustracking/commons/models/bus.dart';
+import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/pages/bus-page/models/bus_page_arguments.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
@@ -6,18 +7,22 @@ import 'package:latlong2/latlong.dart';
 class BusWidget extends StatelessWidget {
   final Bus bus;
   final String time;
-  final LatLng busStopLatLng;
-  final String busStopName;
+  final BusStop stop;
 
   const BusWidget(
       {Key? key,
-      required this.busStopLatLng, required this.busStopName, required this.bus, required this.time})
+      
+      required this.bus,
+      required this.time, required this.stop})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(context, 'bus-page', arguments: BusPageArguments(bus: this.bus, busStopLatLng: this.busStopLatLng, busStopName: this.busStopName));
+        Navigator.pushNamed(context, 'bus-page',
+            arguments: BusPageArguments(
+                bus: this.bus,
+                stop: this.stop));
       },
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),

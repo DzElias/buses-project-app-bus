@@ -3,8 +3,8 @@ import 'package:bustracking/commons/models/bus.dart';
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
 
 import 'package:bustracking/commons/widgets/main_drawer.dart';
-import 'package:bustracking/helpers/cachedTileProvider.dart';
 import 'package:bustracking/search/search_bus_delegate.dart';
+import 'package:bustracking/utils/cachedTileProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -25,6 +25,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
   final mapController = MapController();
 
   String? id;
+  bool track = false;
   @override
   void initState() {
     super.initState();
@@ -39,6 +40,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
         extendBodyBehindAppBar: true,
+        // floatingActionButton: track ? cancelTrackBtn() : Container(),
         appBar: const CustomAppBar(
           title: Text(
             'Buscar Buses',
@@ -80,7 +82,8 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
               },
             ),
             searchBusContainer(),
-            (id != null) ? trackBus(id) : SizedBox()
+            track ? trackBus(id) : SizedBox(),
+            track ? cancelTrackBtn() : Container(),
           ],
         ));
   }
@@ -99,6 +102,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
             if (result != "") {
               setState(() {
                 id = result;
+                track = true;
               });
             }
           },
@@ -109,22 +113,24 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    children: const [
+                    children: [
                       Icon(Icons.directions_bus, color: Colors.green),
                       SizedBox(
                         width: 10,
                       ),
                       Text(
-                        '¿Que bus estas buscando?',
+                        !track
+                            ? '¿Que bus estas buscando?'
+                            : 'Linea ${busById(id).linea} ${busById(id).titulo} ',
                         style: TextStyle(
-                          color: Colors.black45,
+                          color: !track ? Colors.black45 : Colors.black54,
                         ),
-                      ),
+                      )
                     ],
                   ),
-                  const Icon(
+                  Icon(
                     Icons.my_location,
-                    color: Colors.black45,
+                    color: !track ? Colors.black45 : Colors.red,
                   )
                 ]),
           ),
@@ -152,26 +158,42 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
     return markerList;
   }
 
-  trackBus(String? id) {
-    return BlocBuilder<BusesBloc, BusesState>(
-      builder: (context, state) {
-        var buses = state.buses;
-        int index = buses.indexWhere((element) => element.id == id);
-        if (index >= 0) {
-          Bus bus = buses[index];
+  Widget trackBus(String? id) {
+    return BlocBuilder<BusesBloc, BusesState>(builder: (context, state) {
+      var buses = state.buses;
+      int index = buses.indexWhere((element) => element.id == id);
 
-          var busLatLng = LatLng(bus.latitud, bus.longitud);
-          print("hola");
+      Bus bus = buses[index];
 
-          double zoom = mapController.zoom;
-          if (zoom < 16) {
-            zoom = 16.0;
-          }
-          animatedMapMove(busLatLng, zoom);
-        }
+      var busLatLng = LatLng(bus.latitud, bus.longitud);
 
-        return Container();
-      },
+      double zoom = mapController.zoom;
+      if (zoom < 16) {
+        zoom = 16.0;
+      }
+      animatedMapMove(busLatLng, zoom);
+      return Container();
+    });
+  }
+
+  Widget cancelTrackBtn() {
+    return Positioned(
+      bottom: 30,
+      right: 30,
+      child: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            track = false;
+            id = "";
+          });
+        },
+        elevation: 3,
+        backgroundColor: Colors.red,
+        child: Icon(
+          Icons.gps_off_sharp,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 
@@ -206,5 +228,12 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
     });
 
     controller.forward();
+  }
+
+  Bus busById(String? _id) {
+    final buses = Provider.of<BusesBloc>(context, listen: false).state.buses;
+    var i = buses.indexWhere((element) => element.id == _id);
+
+    return buses[i];
   }
 }

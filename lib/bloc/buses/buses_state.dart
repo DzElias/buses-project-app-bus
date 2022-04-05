@@ -1,6 +1,7 @@
 part of 'buses_bloc.dart';
 
-class BusesState extends Equatable {
+@immutable
+class BusesState {
   final List<Bus> buses;
 
   const BusesState({
@@ -14,6 +15,4 @@ class BusesState extends Equatable {
         buses: buses ?? this.buses,
       );
 
-  @override
-  List<Object> get props => [buses];
 }

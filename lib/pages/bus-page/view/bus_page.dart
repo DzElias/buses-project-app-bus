@@ -1,11 +1,15 @@
+import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/widgets/map.dart';
+import 'package:bustracking/bloc/stops/stops_bloc.dart';
 import 'package:bustracking/pages/bus-page/models/bus_page_arguments.dart';
-import 'package:bustracking/services/socket_service.dart';
 import 'package:bustracking/pages/bus-page/widgets/bus-route.dart';
+import 'package:bustracking/commons/models/bus.dart';
+import 'package:bustracking/commons/models/busStop.dart';
+import 'package:bustracking/commons/widgets/map.dart';
+
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
 import 'package:bustracking/commons/widgets/panel_widget.dart';
+import 'package:bustracking/services/socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -13,6 +17,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
 const MAPBOX_ACCESS_TOKEN =
     'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3d4eDQ3OTcwaHk3Mm51cjNmcWRvZjA2In0.AAF794oxyxFR_-wAvVwMfQ';
@@ -24,6 +29,8 @@ class BusPage extends StatefulWidget {
 }
 
 class _BusPageState extends State<BusPage> {
+  bool waiting = false;
+  bool isHere = false;
   static const double fabHeightClosed = 100.0;
   double fabHeight = fabHeightClosed;
 
@@ -35,54 +42,12 @@ class _BusPageState extends State<BusPage> {
   String busID = '';
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  // handleBusLocation(dynamic payload) {
-  //   print(
-  //       '<<<<<<<<<<-------Payload de change-LocationReturn--------->>>>>>>>>>>>>');
-  //   print(payload);
-  //   String payloadId = payload[0];
-  //   if (payloadId == busID) {
-  //     puntos.clear();
-  //     puntos.add(LatLng(
-  //       double.parse(payload[1]),
-  //       double.parse(payload[2]),
-  //     ));
-  //   }
-  //   setState(() {});
-  // }
-
-  @override
   Widget build(BuildContext context) {
-    var markers = puntos.map((latlng) {
-      return Marker(
-          height: 60,
-          width: 60,
-          point: latlng,
-          builder: (_) => Stack(
-                children: const [
-                  Center(
-                      child: Image(
-                    image: AssetImage('assets/bus_point.png'),
-                    height: 60,
-                    width: 60,
-                  )),
-                ],
-              ));
-    }).toList();
-
     final args = ModalRoute.of(context)!.settings.arguments as BusPageArguments;
 
     final bus = args.bus;
-    final String busStopName = args.busStopName;
-    final LatLng busStopLatLng = args.busStopLatLng;
+    final LatLng busStopLatLng = args.stop.location;
+    final String stopId = args.stop.id;
 
     final busLatLng = LatLng(bus.latitud, bus.longitud);
 
@@ -100,14 +65,52 @@ class _BusPageState extends State<BusPage> {
         body: Stack(
           alignment: Alignment.topCenter,
           children: [
-            MapWidget(
-                markers: markers,
-                busStopLatLng: busStopLatLng,
-                busRoute: bus.ruta),
-            slidingUpPanel(
-                panelHeightOpen, panelHeightClosed, busStopName, bus),
+            BlocBuilder<BusesBloc, BusesState>(
+              builder: (context, state) {
+                var bus = state.buses[
+                    state.buses.indexWhere((element) => element.id == busID)];
+                LatLng busLatLng = LatLng(bus.latitud, bus.longitud);
+                return MapWidget(markers: [
+                  Marker(
+                      height: 60,
+                      width: 60,
+                      point: busLatLng,
+                      builder: (_) => Stack(
+                            children: const [
+                              Center(
+                                  child: Image(
+                                image: AssetImage('assets/bus_point.png'),
+                                height: 60,
+                                width: 60,
+                              )),
+                            ],
+                          ))
+                ], busStopLatLng: busStopLatLng, busRoute: bus.ruta);
+              },
+            ),
+            slidingUpPanel(panelHeightOpen, panelHeightClosed, stopId, bus),
             Positioned(
-                right: 20, bottom: fabHeight, child: waitButton(busStopLatLng))
+                right: 20,
+                bottom: fabHeight,
+                child: waitButton(busStopLatLng, stopId)),
+            waiting
+                ? BlocBuilder<BusesBloc, BusesState>(
+                    builder: (context, state) {
+                      var bus = state.buses[state.buses
+                          .indexWhere((element) => element.id == busID)];
+                      LatLng busLatLng = LatLng(bus.latitud, bus.longitud);
+
+                      if (calculateDistance(busLatLng, busStopLatLng) < 20) {
+                        var socketService =
+                            Provider.of<SocketService>(context, listen: false);
+                        socketService.socket.emit("substractWait", stopId);
+                        waiting = false;
+                        isHere = true;
+                      }
+                      return Container();
+                    },
+                  )
+                : SizedBox()
           ],
         ));
   }
@@ -176,14 +179,19 @@ class _BusPageState extends State<BusPage> {
   }
 
   Widget slidingUpPanel(double panelHeightOpen, double panelHeightClosed,
-      String busStopName, Bus bus) {
+      String stopId, Bus bus) {
     List route = bus.paradas;
     bool onnOrOff = false;
-    var paradas = route.map((parada) {
-      if (parada == busStopName) {
+    int min = -5;
+    var paradas = route.map((stopID) {
+      if (stopID == stopId) {
         onnOrOff = true;
       }
-      return BusRoute(onn: onnOrOff, directionName: parada, checkIn: '12:00');
+      min = min + 5;
+      return BusRoute(
+          onn: onnOrOff,
+          directionName: stopById(stopID).title,
+          checkIn: min < 10 ? '12:0$min' : "12:$min");
     }).toList();
     return SlidingUpPanel(
         controller: panelController,
@@ -234,7 +242,15 @@ class _BusPageState extends State<BusPage> {
             }));
   }
 
-  waitButton(LatLng busStopLatLng) {
+  BusStop stopById(stopID) {
+    final stops = Provider.of<StopsBloc>(context, listen: false).state.stops;
+
+    int index = stops.indexWhere((element) => stopID == element.id);
+    var stop = stops[index];
+    return stop;
+  }
+
+  waitButton(LatLng busStopLatLng, String stopID) {
     return BlocBuilder<MyLocationBloc, MyLocationState>(
       builder: (context, state) {
         return ElevatedButton(
@@ -246,7 +262,14 @@ class _BusPageState extends State<BusPage> {
                 borderRadius: new BorderRadius.circular(20.0),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              if (isNear(state.location, busStopLatLng)) {
+                var service =
+                    Provider.of<SocketService>(context, listen: false);
+                service.socket.emit("addWait", stopID);
+                waiting = true;
+              }
+            },
             child: Padding(
               padding: const EdgeInsets.only(top: 10, bottom: 10),
               child: Row(

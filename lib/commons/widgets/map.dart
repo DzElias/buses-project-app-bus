@@ -1,11 +1,9 @@
-import 'dart:convert';
+// ignore_for_file: must_be_immutable
 
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/commons/models/busStop.dart';
-import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
-import 'package:bustracking/helpers/cachedTileProvider.dart';
 import 'package:bustracking/pages/bus-stop-page/models/walking_route.dart';
-import 'package:bustracking/pages/nearby-bus-stop-page/widgets/stop_details.dart';
+import 'package:bustracking/utils/cachedTileProvider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -13,14 +11,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'my-location-marker.dart';
 
 const MAPBOX_ACCESS_TOKEN =
-    'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3d4eDQ3OTcwaHk3Mm51cjNmcWRvZjA2In0.AAF794oxyxFR_-wAvVwMfQ';
+    'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3o4c3Nla20xbnBrMnBwMTN4cXpuOGYxIn0.wfniiVLrGVbimAqr_OKyMg';
 const MAPBOX_STYLE = 'mapbox/light-v10';
 const MARKER_COLOR = Colors.blueAccent;
 const MARKER_SIZE_EXPANDED = 60.0;
@@ -46,7 +43,6 @@ class MapWidget extends StatefulWidget {
 
 class _MapState extends State<MapWidget> with TickerProviderStateMixin {
   List<BusStop> busStops = [];
-  int _selectedIndex = 0;
   List<LatLng> rutaCoords = [];
 
   late final AnimationController animationController;
@@ -79,14 +75,15 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
     final myLocationBloc = Provider.of<MyLocationBloc>(context, listen: false);
     LatLng? lastLocation = myLocationBloc.state.location;
 
-    final points = polylinePoints.decodePolyline("zdhso@`lpggBrtEevQkEeo@tv@i|ChVW`yOpwEobHrwXyoOm|Ey@q@");
-
     return Scaffold(
-        floatingActionButton: widget.showStops ? floatingActionButton(context) : SizedBox(),
+        floatingActionButton:
+            widget.showStops ? floatingActionButton(context) : SizedBox(),
         floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
         body: Stack(
           children: [
-            BlocBuilder<MyLocationBloc, MyLocationState>(builder: (context, state) => showMap(state, lastLocation, context)),
+            BlocBuilder<MyLocationBloc, MyLocationState>(
+                builder: (context, state) =>
+                    showMap(state, lastLocation, context)),
           ],
         ));
   }
@@ -114,7 +111,8 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
     );
   }
 
-  Widget showMap(MyLocationState state, LatLng? lastLocation, BuildContext context) {
+  Widget showMap(
+      MyLocationState state, LatLng? lastLocation, BuildContext context) {
     if (!state.locationExist) {
       return Center(
         child: CircularProgressIndicator(
@@ -123,8 +121,11 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
       );
     }
 
-    Polyline _rutaParada =  Polyline(points: rutaCoords, strokeWidth: 6, color: Colors.blue, isDotted: true);
-    final points = widget.busRoute.isNotEmpty ? polylinePoints.decodePolyline(widget.busRoute) : [];
+    Polyline _rutaParada = Polyline(
+        points: rutaCoords, strokeWidth: 6, color: Colors.blue, isDotted: true);
+    final points = widget.busRoute.isNotEmpty
+        ? polylinePoints.decodePolyline(widget.busRoute)
+        : [];
 
     return FlutterMap(
       mapController: mapController,
@@ -143,13 +144,14 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
               'id': MAPBOX_STYLE
             },
             tileProvider: const CachedTileProvider()),
-        points.isNotEmpty ? PolylineLayerOptions(
-          polylines: [
+        points.isNotEmpty
+            ? PolylineLayerOptions(polylines: [
                 Polyline(
                     strokeWidth: 3.0,
                     color: Colors.blue,
                     points: points
-                        .map((point) => LatLng(point.latitude / 10, point.longitude / 10))
+                        .map((point) =>
+                            LatLng(point.latitude / 10, point.longitude / 10))
                         .toList())
               ])
             : PolylineLayerOptions(),
@@ -193,7 +195,6 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
             // marker
           ],
         ),
-        
       ],
     );
   }
@@ -239,7 +240,7 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
   Future crear_ruta_a_parada(LatLng? inicio, LatLng? destino) async {
     final url =
         '${baseUrl}/mapbox/walking/${inicio!.longitude},${inicio.latitude};${destino!.longitude},${destino.latitude}';
-
+  
     final resp = await this._dio.get(url, queryParameters: {
       'alternatives': 'false',
       'geometries': 'polyline6',
@@ -250,8 +251,6 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
 
     final data = WalkingRoute.fromJson(resp.data);
     final geometry = data.routes[0].geometry;
-    final duracion = data.routes[0].duration;
-    final distancia = data.routes[0].distance;
     final points = polylinePoints.decodePolyline(geometry);
 
     setState(() {

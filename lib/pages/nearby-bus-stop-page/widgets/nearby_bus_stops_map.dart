@@ -1,7 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-import 'dart:convert';
-
+import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/bloc/map/map_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
@@ -9,8 +8,8 @@ import 'package:bustracking/bloc/stops/stops_bloc.dart';
 import 'package:bustracking/commons/models/busStop.dart';
 import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
 import 'package:bustracking/commons/widgets/my-location-marker.dart';
-import 'package:bustracking/helpers/cachedTileProvider.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/stop_details.dart';
+import 'package:bustracking/utils/cachedTileProvider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,10 +45,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
 
   @override
   void initState() {
-    getLastLocation();
-
-    // mapController = MapController();
-
+    getFirstLocation();
     animationController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 800));
     animationController.repeat(reverse: true);
@@ -123,21 +119,26 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
             },
           ),
           BlocBuilder<StopsBloc, StopsState>(
-            builder: (context, state) {
-              var busStops = state.stops;
-
-              if (busStops.isNotEmpty) {
-                busStops.sort((a, b) => (calculateDistance(a.location))
-                    .compareTo(calculateDistance(b.location)));
-                createBusStopsMarkers(busStops);
-              }
-
+            builder: (context, stopsState) {
+              List<BusStop> stops = [];
               return BlocBuilder<SearchBloc, SearchState>(
                 builder: (context, state) {
+                  if (stopsState.stops.isNotEmpty) {
+                    stops = Provider.of<StopsBloc>(context, listen: false)
+                        .state
+                        .stops;
+                    stops.sort((a, b) => (calculateDistance(a.location))
+        .compareTo(calculateDistance(b.location)));
+                    createBusStopsMarkers(stops);
+                  }
                   if (state.manualSelection) {
                     return Container();
                   }
-                  return pageView(context, busStops);
+                  if (stops.isNotEmpty) {
+                    return pageView(context, stops);
+                  } else {
+                    return SizedBox();
+                  }
                 },
               );
             },
@@ -200,7 +201,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
         child: busStops.isNotEmpty
             ? NotificationListener<OverscrollIndicatorNotification>(
                 onNotification: (overScroll) {
-                  overScroll.disallowGlow();
+                  overScroll.disallowIndicator();
                   return true;
                 },
                 child: PageView.builder(
@@ -228,23 +229,11 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
             : SizedBox());
   }
 
-  // getBusStops() async {
-  //   var stopsBloc = Provider.of<StopsBloc>(context, listen: false);
-  //   await stopsBloc.getStops();
-  //   final List<BusStop> stops =
-  //       Provider.of<StopsBloc>(context, listen: false).state.stops;
-  //   busStops = stops;
-  //   busStops.sort((a, b) => (calculateDistance(a.location))
-  //       .compareTo(calculateDistance(b.location)));
-  //   createBusStopsMarkers();
-  // }
-
   createBusStopsMarkers(List<BusStop> busStops) {
-    int i = 0;
     List<Marker> _markerList = [];
-    for (var stop in busStops) {
-      // for (int i = 0; i < busStops.length; i++) {
-      //   final mapItem = busStops[i];
+    // for (var stop in busStops) {
+    for (int i = 0; i < busStops.length; i++) {
+      final stop = busStops[i];
 
       _markerList.add(Marker(
           height: MARKER_SIZE_EXPANDED,
@@ -269,7 +258,6 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                   selected: _selectedIndex == i,
                 ));
           }));
-      i++;
     }
     markers = _markerList;
     Future.delayed(Duration(seconds: 3)).then((value) {
@@ -313,7 +301,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
     controller.forward();
   }
 
-  void getLastLocation() async {
+  void getFirstLocation() async {
     Position? position = await Geolocator.getLastKnownPosition();
     _myLocation = LatLng(position!.latitude, position.longitude);
   }

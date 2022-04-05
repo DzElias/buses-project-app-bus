@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class MainDrawer extends StatelessWidget {
   @override
@@ -70,12 +69,13 @@ class MainDrawer extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     onTap: () {
-                      if(ModalRoute.of(context)!.settings.name != 'nearby-bus-stop-page'){
-                        Navigator.pushReplacementNamed(context, 'nearby-bus-stop-page');
-                      }else{
+                      if (ModalRoute.of(context)!.settings.name !=
+                          'nearby-bus-stop-page') {
+                        Navigator.pushReplacementNamed(
+                            context, 'nearby-bus-stop-page');
+                      } else {
                         Navigator.pop(context);
                       }
-                      
                     },
                   ),
                   ListTile(
@@ -86,12 +86,12 @@ class MainDrawer extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     onTap: () {
-                      if(ModalRoute.of(context)!.settings.name != 'search-bus'){
+                      if (ModalRoute.of(context)!.settings.name !=
+                          'search-bus') {
                         Navigator.pushReplacementNamed(context, 'search-bus');
-                      }else{
+                      } else {
                         Navigator.pop(context);
                       }
-                      
                     },
                   ),
                   ListTile(
@@ -104,12 +104,13 @@ class MainDrawer extends StatelessWidget {
                           fontFamily: 'Betm-Medium'),
                     ),
                     onTap: () {
-                      if(ModalRoute.of(context)!.settings.name != 'daily-reminders-page'){
-                        Navigator.pushReplacementNamed(context, 'daily-reminders-page');
-                      }else{
+                      if (ModalRoute.of(context)!.settings.name !=
+                          'daily-reminders-page') {
+                        Navigator.pushReplacementNamed(
+                            context, 'daily-reminders-page');
+                      } else {
                         Navigator.pop(context);
                       }
-                      
                     },
                   ),
                 ],
