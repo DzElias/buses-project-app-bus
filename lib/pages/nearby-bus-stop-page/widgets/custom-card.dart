@@ -6,9 +6,8 @@ class CustomCard extends StatelessWidget {
   final String stopName;
   final String distance;
   final String time;
-  final String imageLink;
+
   final bool isNearest;
-  final String stopAdress;
   final LatLng stopLatLng;
   final String stopId;
 
@@ -17,8 +16,7 @@ class CustomCard extends StatelessWidget {
       required this.stopName,
       required this.distance,
       required this.time,
-      required this.imageLink,
-      required this.stopAdress,
+  
       required this.stopLatLng,
       required this.stopId,
       this.isNearest = false})
@@ -30,8 +28,7 @@ class CustomCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           Navigator.pushNamed(context, 'bus-stop',
-              arguments: BusStopPageArguments(this.stopName, this.stopAdress,
-                  this.time, this.stopLatLng, this.stopId));
+              arguments: BusStopPageArguments(this.stopName,this.time, this.stopLatLng, this.stopId));
         },
         child: Padding(
           padding: const EdgeInsets.all(10.0),

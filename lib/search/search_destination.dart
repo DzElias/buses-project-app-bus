@@ -46,22 +46,25 @@ class SearchDestinationDelegate
           itemCount: places.length,
           itemBuilder: (context, i) {
             final place = places[i];
-            return ListTile(
-                title: Text(place.text),
-                subtitle: Text(place.placeName),
-                leading: const Icon(Icons.place_outlined, color: Colors.black),
-                onTap: () {
-                  final result = SearchDestinationResult(
-                      cancel: false,
-                      manual: false,
-                      position: LatLng(place.center[1], place.center[0]),
-                      name: place.text,
-                      description: place.placeName);
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                  title: Text(place.text),
+                  subtitle: Text(place.placeName),
+                  leading: const Icon(Icons.place_outlined, color: Colors.black),
+                  onTap: () {
+                    final result = SearchDestinationResult(
+                        cancel: false,
+                        manual: false,
+                        position: LatLng(place.center[1], place.center[0]),
+                        name: place.text,
+                        description: place.placeName);
 
-                  searchBloc.add(AddToHistoryEvent(place));
+                    searchBloc.add(AddToHistoryEvent(place));
 
-                  close(context, result);
-                });
+                    close(context, result);
+                  }),
+            );
           },
           separatorBuilder: (context, i) => const Divider(),
         );

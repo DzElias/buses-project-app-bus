@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget title;
   final bool centerTitle;
-  const CustomAppBar({Key? key, required this.title, this.centerTitle = false})
+  final Color? backgroundColor;
+  const CustomAppBar({Key? key, required this.title, this.centerTitle = false, required this.backgroundColor})
       : super(key: key);
 
   @override
@@ -17,8 +18,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: title,
       centerTitle: centerTitle,
-      elevation: 0.0,
-      backgroundColor: Colors.transparent,
+      elevation: (backgroundColor == Colors.transparent)? 0.0 : 1.0,
+      backgroundColor: this.backgroundColor,
       systemOverlayStyle: SystemUiOverlayStyle(
         statusBarIconBrightness: Brightness.dark,
       ),

@@ -1,7 +1,16 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:bustracking/bloc/buses/buses_bloc.dart';
+import 'package:bustracking/bloc/map/map_bloc.dart';
+import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
+import 'package:bustracking/bloc/stops/stops_bloc.dart';
+import 'package:bustracking/pages/options-page/view/options_page.dart';
+import 'package:bustracking/utils/get_options.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+
+import 'package:latlong2/latlong.dart';
 
 class ManualMarker extends StatelessWidget {
   const ManualMarker({Key? key}) : super(key: key);
@@ -19,8 +28,7 @@ class ManualMarker extends StatelessWidget {
               backgroundColor: Colors.white,
               child: IconButton(
                   onPressed: () {
-                    final searchBloc =
-                        Provider.of<SearchBloc>(context, listen: false);
+                    final searchBloc =Provider.of<SearchBloc>(context, listen: false);
                     searchBloc.add(OnDeactivateManualMarkerEvent());
                   },
                   icon: Icon(
@@ -50,11 +58,35 @@ class ManualMarker extends StatelessWidget {
             padding: EdgeInsets.symmetric(vertical: 16),
             color: Colors.green,
             elevation: 0,
-            onPressed: () {},
-            child: Text(
-              'Confirmar destino',
-              style: TextStyle(fontSize: 18, color: Colors.white),
-            ),
+            onPressed: () 
+            {
+              final mapBloc = Provider.of<MapBloc>(context, listen: false);
+              LatLng center = mapBloc.mapController.center;
+
+              final myLocationBloc = Provider.of<MyLocationBloc>(context, listen: false);
+              LatLng userLocation = myLocationBloc.state.location!;
+
+              final stops = Provider.of<StopsBloc>(context, listen: false).state.stops;
+              final buses = Provider.of<BusesBloc>(context, listen: false).state.buses;
+
+
+              var destinationService = DestinationService(buses: buses , stops: stops, userLocation: userLocation, destination: center);
+              var options = destinationService.getOptions();
+
+              final searchBloc =Provider.of<SearchBloc>(context, listen: false);
+              searchBloc.add(OnDeactivateManualMarkerEvent());
+
+              if(options.isNotEmpty)
+              {
+                Navigator.push( context,MaterialPageRoute(builder: (context) => OptionsPage(options: options, destino: center, )));
+      
+              }
+              else
+              {
+                 Fluttertoast.showToast(msg: "No encontramos opciones para ese destino :(" );
+              }
+            },
+            child: Text('Confirmar destino', style: TextStyle(fontSize: 18, color: Colors.white),),
           ),
         )
       ],

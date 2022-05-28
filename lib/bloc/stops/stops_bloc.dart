@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:bustracking/commons/models/busStop.dart';
+import 'package:bustracking/commons/models/stop.dart';
 import 'package:bustracking/services/stops_service.dart';
 import 'package:equatable/equatable.dart';
 
@@ -9,8 +9,7 @@ part 'stops_state.dart';
 class StopsBloc extends Bloc<StopsEvent, StopsState> {
   StopService stopService;
   StopsBloc({required this.stopService}) : super(StopsState()) {
-    on<OnStopsFoundEvent>(
-        (event, emit) => emit(state.copyWith(stops: event.stops)));
+    on<OnStopsFoundEvent>((event, emit) => emit(state.copyWith(stops: event.stops)));
   }
 
   Future getStops() async {

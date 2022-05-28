@@ -48,7 +48,7 @@ class Bus {
 
   Map<String, dynamic> toJson() => {
         "_id": id,
-        "linea": linea,
+        "linea": linea.toString(),
         "Paradas": List<dynamic>.from(paradas.map((x) => x)),
         "PrimeraParada": primeraParada,
         "UltimaParada": ultimaParada,

@@ -95,37 +95,40 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: const CustomAppBar(
+            backgroundColor: Colors.transparent,
             centerTitle: true,
             title: Text(
-              'Paradas de Buses Cercanas',
+             'Paradas de Buses Cercanas',
               style: TextStyle(
                   fontSize: 17,
                   color: Colors.black87,
                   fontFamily: 'Betm-Medium',
-                  fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold
+                ),
             ),
           ),
-          drawer: MainDrawer(),
+          // drawer: MainDrawer(),
           body: FutureBuilder(
             future: checkGpsAccess(context),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasData) {
+            builder: (BuildContext context, AsyncSnapshot snapshot) 
+            {
+              if (snapshot.hasData) 
+              {
                 return BlocBuilder<MyLocationBloc, MyLocationState>(
-                  builder: (context, state) {
+                  builder: (context, state) 
+                  {
                     return Stack(
-                      children: const [
+                      children: const 
+                      [
                         NearbyBusStopsMap(),
                         SearchBar(),
                       ],
                     );
                   },
                 );
-              } else {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                );
+              } else 
+              {
+                return const Center(child: CircularProgressIndicator(strokeWidth: 2,),);
               }
             },
           ),
@@ -134,7 +137,8 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
     );
   }
 
-  initialization() {
+  initialization() 
+  async {
     final busesBloc = Provider.of<BusesBloc>(context, listen: false);
     busesBloc.getBuses();
     final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
@@ -142,17 +146,24 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
     final socketService = Provider.of<SocketService>(context, listen: false);
     socketService.socket.connect();
     socketService.socket.on('change-locationReturn', busesBloc.handleBusLocation);
+    socketService.socket.on('changeNextStopReturn', busesBloc.handleBusProxStop);
+
+    await Future.delayed(Duration(seconds: 3));
     FlutterNativeSplash.remove();
   }
 
-  checkGpsAccess(BuildContext context) async {
+  checkGpsAccess(BuildContext context) async 
+  {
     bool permisoGPS = await permission.Permission.location.isGranted;
     final gpsActivo = await Geolocator.isLocationServiceEnabled();
 
-    if (!permisoGPS | !gpsActivo) {
+    if (!permisoGPS | !gpsActivo) 
+    {
       await Future.delayed(const Duration(milliseconds: 1000));
       Navigator.pushReplacementNamed(context, 'gps-access-page');
-    } else {
+    }else 
+    {
+
       Position? position = await Geolocator.getCurrentPosition();
       myLocation = LatLng(position.latitude, position.longitude);
 

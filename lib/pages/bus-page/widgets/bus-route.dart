@@ -17,16 +17,20 @@ class BusRoute extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          Container(
+            width: 60,
+            child: Text(
+                  this.checkIn,
+                  style: TextStyle(color: Colors.black54, fontSize: 13),
+                ),
+          ),
           Row(
             children: [
-              Text(
-                this.checkIn,
-                style: TextStyle(color: Colors.black54, fontSize: 14),
-              ),
+              
               SizedBox(
-                width: 20,
+                width: 10,
               ),
               Icon(
                 Icons.location_on,
@@ -44,6 +48,7 @@ class BusRoute extends StatelessWidget {
                       color: onn ? Colors.black87 : Colors.black54)),
             ],
           ),
+          Spacer(),
           onn
               ? InkWell(
                   onTap: () {},

@@ -13,4 +13,8 @@ class OnMapInitializedEvent extends MapEvent{
   const OnMapInitializedEvent(this.controller);
 }
 
+class OnMap2InitializedEvent extends MapEvent{
+  final MapController controller;
+  const OnMap2InitializedEvent(this.controller);
+}
 

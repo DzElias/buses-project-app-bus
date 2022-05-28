@@ -1,7 +1,10 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:bustracking/bloc/map/map_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
-import 'package:bustracking/commons/models/busStop.dart';
+import 'package:bustracking/bloc/stops/stops_bloc.dart';
+import 'package:bustracking/commons/models/stop.dart';
+import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
 import 'package:bustracking/pages/bus-stop-page/models/walking_route.dart';
 import 'package:bustracking/utils/cachedTileProvider.dart';
 import 'package:dio/dio.dart';
@@ -24,17 +27,24 @@ const MARKER_SIZE_EXPANDED = 60.0;
 const MARKER_SIZE_SHRINKED = 40.0;
 
 class MapWidget extends StatefulWidget {
-  bool showStops;
   LatLng? busStopLatLng;
   List<Marker> markers = [];
+  List<String> selectedStops = [];
   String busRoute = '';
+  LatLng destino2;
+  bool viajando;
 
   MapWidget(
       {Key? key,
-      this.showStops = false,
+
       this.busStopLatLng,
+      required this.selectedStops,
+      required this.destino2,
       required this.markers,
-      required this.busRoute})
+      required this.busRoute,
+      required this.viajando
+      
+      })
       : super(key: key);
 
   @override
@@ -42,8 +52,9 @@ class MapWidget extends StatefulWidget {
 }
 
 class _MapState extends State<MapWidget> with TickerProviderStateMixin {
-  List<BusStop> busStops = [];
+  List<Stop> busStops = [];
   List<LatLng> rutaCoords = [];
+  List<LatLng> rutaCoords2 = [];
 
   late final AnimationController animationController;
   final MapController mapController = MapController();
@@ -52,9 +63,9 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
   void initState() {
     final myLocationBloc = Provider.of<MyLocationBloc>(context, listen: false);
 
-    if (!widget.showStops) {
-      crear_ruta_a_parada(myLocationBloc.state.location!, widget.busStopLatLng);
-    }
+    
+    crear_ruta_a_parada(myLocationBloc.state.location!, widget.selectedStops, widget.destino2);
+    
 
     animationController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 800));
@@ -75,9 +86,18 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
     final myLocationBloc = Provider.of<MyLocationBloc>(context, listen: false);
     LatLng? lastLocation = myLocationBloc.state.location;
 
+    if(widget.viajando){
+      rutaCoords = [];
+    }
+
+    if(rutaCoords2.isNotEmpty){
+      if(calculateDistance(rutaCoords2.last)<10 ){
+      rutaCoords2 = [];
+      }
+    }
+
     return Scaffold(
-        floatingActionButton:
-            widget.showStops ? floatingActionButton(context) : SizedBox(),
+        floatingActionButton: floatingActionButton(context),
         floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
         body: Stack(
           children: [
@@ -89,10 +109,10 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
   }
 
   floatingActionButton(BuildContext context) {
-    return BlocBuilder<MyLocationBloc, MyLocationState>(
+    return !widget.viajando? BlocBuilder<MyLocationBloc, MyLocationState>(
       builder: (context, state) {
         return Container(
-          margin: EdgeInsets.only(top: 150, right: 20),
+          margin: widget.busRoute.isNotEmpty ? EdgeInsets.only(top: 70, right: 20) : EdgeInsets.only(top: 20, right: 20) ,
           child: FloatingActionButton(
             mini: true,
             backgroundColor: Colors.white,
@@ -103,12 +123,12 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
             onPressed: () {
               animatedMapMove(
                   LatLng(state.location!.latitude, state.location!.longitude),
-                  16);
+                  18);
             },
           ),
         );
       },
-    );
+    ) : SizedBox();
   }
 
   Widget showMap(
@@ -121,81 +141,88 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
       );
     }
 
-    Polyline _rutaParada = Polyline(
-        points: rutaCoords, strokeWidth: 6, color: Colors.blue, isDotted: true);
-    final points = widget.busRoute.isNotEmpty
-        ? polylinePoints.decodePolyline(widget.busRoute)
-        : [];
+    Polyline _rutaParada = Polyline( points: rutaCoords, strokeWidth: 6, color: Colors.blue, isDotted: true);
+    Polyline _rutaParada2 = Polyline( points: rutaCoords2, strokeWidth: 6, color: Colors.blue, isDotted: true);
+    final points = widget.busRoute.isNotEmpty? polylinePoints.decodePolyline(widget.busRoute): [];
 
-    return FlutterMap(
-      mapController: mapController,
-      options: MapOptions(
-          center: lastLocation,
-          minZoom: 5,
-          zoom: 16,
-          maxZoom: 18,
-          interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate),
-      layers: [
-        TileLayerOptions(
-            urlTemplate:
-                "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
-            additionalOptions: {
-              'accessToken': MAPBOX_ACCESS_TOKEN,
-              'id': MAPBOX_STYLE
-            },
-            tileProvider: const CachedTileProvider()),
-        points.isNotEmpty
-            ? PolylineLayerOptions(polylines: [
-                Polyline(
-                    strokeWidth: 3.0,
-                    color: Colors.blue,
-                    points: points
-                        .map((point) =>
-                            LatLng(point.latitude / 10, point.longitude / 10))
-                        .toList())
-              ])
-            : PolylineLayerOptions(),
-        PolylineLayerOptions(
-          polylines: [_rutaParada],
-        ),
-        // MarkerLayerOptions(markers: markers),
-        MarkerLayerOptions(markers: widget.markers),
-        MarkerLayerOptions(
-          markers: [
-            Marker(
-              height: 60,
-              width: 60,
-              point:
-                  LatLng(state.location!.latitude, state.location!.longitude),
-              builder: (BuildContext context) =>
-                  MyLocationMarker(animationController),
+    final mapBloc = BlocProvider.of<MapBloc>(context);
+
+    return BlocBuilder<StopsBloc, StopsState>(
+      builder: (context, stopsState) {
+         List stops = stopsState.stops;
+        return FlutterMap(
+          mapController: mapController,
+          options: MapOptions(
+              onMapCreated: (controller) {
+                mapBloc.add(OnMap2InitializedEvent(controller));
+              },
+              center: lastLocation,
+              minZoom: 5,
+              zoom: 16,
+              maxZoom: 18,
+              interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate),
+          layers: [
+            TileLayerOptions(
+                urlTemplate:
+                    "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
+                additionalOptions: {
+                  'accessToken': MAPBOX_ACCESS_TOKEN,
+                  'id': MAPBOX_STYLE
+                },
+                tileProvider: const CachedTileProvider()),
+            points.isNotEmpty
+                ? PolylineLayerOptions(polylines: [
+                    Polyline(
+                        strokeWidth: 3.0,
+                        color: Colors.green,
+                        points: points
+                            .map((point) => LatLng(
+                                point.latitude / 10, point.longitude / 10))
+                            .toList())
+                  ])
+                : PolylineLayerOptions(),
+            PolylineLayerOptions(
+              polylines: [_rutaParada, _rutaParada2],
             ),
-            !widget.showStops
-                ? Marker(
-                    height: MARKER_SIZE_EXPANDED,
-                    width: MARKER_SIZE_EXPANDED,
-                    point: widget.busStopLatLng!,
-                    builder: (context) {
-                      return GestureDetector(
-                          onTap: () async {
-                            animatedMapMove(
-                                widget.busStopLatLng!, mapController.zoom);
-                          },
-                          // child: Icon(Icons.place),
-                          child: Center(
-                              child: Container(
-                            child: Image(
-                              image: AssetImage('assets/busStop.png'),
-                            ),
-                            height: MARKER_SIZE_EXPANDED,
-                            width: MARKER_SIZE_EXPANDED,
-                          )));
-                    })
-                : Marker(point: LatLng(0, 0), builder: (_) => SizedBox())
-            // marker
+            // MarkerLayerOptions(markers: markers),
+            !widget.viajando? MarkerLayerOptions(
+              markers: [
+                Marker(
+                  height: 60,
+                  width: 60,
+                  point: LatLng(state.location!.latitude, state.location!.longitude),
+                  builder: (BuildContext context) =>MyLocationMarker(animationController),
+                ),
+              ],
+            ): MarkerLayerOptions(
+              markers: []
+            ),
+            MarkerLayerOptions(
+             markers: buildMarkers(stops)
+            ),
+
+            (widget.selectedStops.length > 1) ? 
+            MarkerLayerOptions
+            (
+              markers:
+              [
+                Marker(
+                  point: widget.destino2, 
+                  height: 40,
+                  width: 40,
+                  builder: (BuildContext context) => GestureDetector(child: Icon( Icons.location_on_rounded, size: 40, color: Colors.blue,),
+                  
+                  )
+                
+                )    
+              ]
+            ) 
+            : MarkerLayerOptions(),
+            
+            MarkerLayerOptions(markers: widget.markers),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -234,13 +261,17 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
   }
 
   final baseUrl = 'https://api.mapbox.com/directions/v5';
-  final _dio = new Dio();
+  var _dio = new Dio();
   PolylinePoints polylinePoints = PolylinePoints();
 
-  Future crear_ruta_a_parada(LatLng? inicio, LatLng? destino) async {
-    final url =
-        '${baseUrl}/mapbox/walking/${inicio!.longitude},${inicio.latitude};${destino!.longitude},${destino.latitude}';
-  
+  Future crear_ruta_a_parada(LatLng? inicio, List<String> stops, LatLng destino2) async {
+    final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
+    final i = stopsBloc.state.stops.indexWhere((element) => element.id == stops[0]);
+
+    LatLng destino = LatLng(stopsBloc.state.stops[i].latitud, stopsBloc.state.stops[i].longitud);
+
+    var url ='${baseUrl}/mapbox/walking/${inicio!.longitude},${inicio.latitude};${destino.longitude},${destino.latitude}';
+
     final resp = await this._dio.get(url, queryParameters: {
       'alternatives': 'false',
       'geometries': 'polyline6',
@@ -253,12 +284,40 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
     final geometry = data.routes[0].geometry;
     final points = polylinePoints.decodePolyline(geometry);
 
+    if(stops.length > 1)
+    {
+     final index = stopsBloc.state.stops.indexWhere((element) => element.id == stops[1]);
+     destino = LatLng(stopsBloc.state.stops[index].latitud, stopsBloc.state.stops[index].longitud);
+
+      url ='${baseUrl}/mapbox/walking/${destino.longitude},${destino.latitude};${destino2.longitude},${destino2.latitude}';
+      _dio = new Dio();
+      final resp2 = await this._dio.get(url, queryParameters: {
+      'alternatives': 'false',
+      'geometries': 'polyline6',
+      'steps': 'false',
+      'access_token': MAPBOX_ACCESS_TOKEN,
+      'language': 'es',
+    });
+
+    final data2 = WalkingRoute.fromJson(resp2.data);
+    final geometry2 = data2.routes[0].geometry;
+    final points2 = polylinePoints.decodePolyline(geometry2);
+
+    setState(() {
+      rutaCoords2 = points2
+          .map((point) => LatLng(point.latitude / 10, point.longitude / 10))
+          .toList();     // rutaCoords[((rutaCoords.length) / 2).round()]
+    });
+
+
+    }
+
     setState(() {
       rutaCoords = points
           .map((point) => LatLng(point.latitude / 10, point.longitude / 10))
           .toList();
 
-      animatedMapMove(destino, 15);
+      animatedMapMove(inicio, 18);
       // rutaCoords[((rutaCoords.length) / 2).round()]
     });
   }
@@ -293,4 +352,31 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
       return time;
     }
   }
+  List<Marker> buildMarkers(List stops) {
+  if(stops.isEmpty){
+    return [];
+  }
+  List<Marker> _markerList = [];
+
+  for(int i=0; i<stops.length; i++ ){
+    Stop stop = stops[i];
+    bool _selected = false;
+    for(String id in widget.selectedStops){
+      if(id == stop.id){
+        _selected = true;
+      }
+    }
+    _markerList.add(Marker(
+          height: MARKER_SIZE_EXPANDED,
+          width: MARKER_SIZE_EXPANDED,
+          point: LatLng(stop.latitud, stop.longitud),
+          builder: (_) {
+            return BusStopMarker(selected: _selected);
+          }));
+  }
+  
+  return _markerList;
 }
+}
+
+

@@ -18,7 +18,9 @@ class TrafficService {
     final url = '$_basePlacesUrl/$query.json';
 
     final resp = await _dioPlaces.get(url, queryParameters: {
-      'proximity': '${proximity.longitude},${proximity.latitude}'
+      'proximity': '${proximity.longitude},${proximity.latitude}',
+      'country': 'PY',
+      'limit': '3'
     });
 
     final placesResponse = PlacesResponse.fromJson(resp.data);

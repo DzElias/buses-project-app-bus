@@ -19,5 +19,5 @@ final Map<String, Widget Function(BuildContext)> appRoutes = {
   'bus-page': (_) => BusPage(),
   'daily-reminders-page': (_) => DailyRemindersPage(),
   'set-daily-reminder-page': (_) => const SetDailyReminderPage(),
-  'gps-access-page': (_) => const GpsAccessPage()
+  'gps-access-page': (_) => const GpsAccessPage(),
 };

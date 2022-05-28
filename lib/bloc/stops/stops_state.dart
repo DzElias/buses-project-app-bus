@@ -1,14 +1,14 @@
 part of 'stops_bloc.dart';
 
 class StopsState extends Equatable {
-  final List<BusStop> stops;
+  final List<Stop> stops;
 
   const StopsState({
     this.stops = const [],
   });
 
   StopsState copyWith({
-    List<BusStop>? stops,
+    List<Stop>? stops,
   }) =>
       StopsState(
         stops: stops ?? this.stops,

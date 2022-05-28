@@ -35,11 +35,23 @@ class BusesBloc extends Bloc<BusesEvent, BusesState> {
     if (index >= 0) {
       String lat = payload[1];
       String long = payload[2];
-      print("$lat $long");
       buses[index].latitud = double.parse(lat);
       buses[index].longitud = double.parse(long);
 
       add(OnBusesFoundEvent(buses));
+    }
+  }
+
+  handleBusProxStop(dynamic payload) {
+    final buses = state.buses;
+    int index = buses.indexWhere((element) => element.id == payload[0]);
+
+    if ( index >= 0){
+      String proxStop = payload[1];
+      buses[index].proximaParada = proxStop;
+
+      add(OnBusesFoundEvent(buses));
+
     }
   }
 }

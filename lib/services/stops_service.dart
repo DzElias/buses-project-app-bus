@@ -1,25 +1,18 @@
 import 'dart:convert';
 
-import 'package:bustracking/commons/models/busStop.dart';
+import 'package:bustracking/commons/models/bus.dart';
+import 'package:bustracking/commons/models/stop.dart';
 import 'package:http/http.dart';
 
 import 'package:latlong2/latlong.dart';
 
 class StopService {
-  Future<List<BusStop>> getStops() async {
-    final response = await get(
-        Uri.parse('https://pruebas-socket.herokuapp.com/coordenadas'));
+  Future<List<Stop>> getStops() async {
+    final response = await get(Uri.parse('https://pruebas-socket.herokuapp.com/coordenadas'));
     List data = jsonDecode(response.body);
-    List<BusStop> busStops = [];
-
+    List<Stop> busStops = [];
     for (var singleBusStop in data) {
-      BusStop busStop = (BusStop(
-          id: singleBusStop['_id'],
-          title: singleBusStop['titulo'],
-          location: LatLng(singleBusStop['latitud'].toDouble(),
-              singleBusStop['longitud'].toDouble()),
-          adress: singleBusStop['direccion'],
-          imageLink: singleBusStop['imagen']));
+      Stop busStop = Stop.fromJson(singleBusStop);
       busStops.add(busStop);
     }
     return busStops;

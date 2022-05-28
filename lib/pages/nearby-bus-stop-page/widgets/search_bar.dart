@@ -1,7 +1,16 @@
+import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
+import 'package:bustracking/bloc/stops/stops_bloc.dart';
+import 'package:bustracking/commons/models/bus.dart';
+import 'package:bustracking/commons/models/stop.dart';
 import 'package:bustracking/commons/models/search_destination_result.dart';
+import 'package:bustracking/pages/options-page/view/options_page.dart';
 import 'package:bustracking/search/search_destination.dart';
+import 'package:bustracking/utils/get_options.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:latlong2/latlong.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,8 +28,7 @@ class SearchBar extends StatelessWidget {
           ),
           child: ElevatedButton(
             onPressed: () async {
-              final locationBloc =
-                  Provider.of<MyLocationBloc>(context, listen: false);
+              final locationBloc = Provider.of<MyLocationBloc>(context, listen: false);
               final proximity = locationBloc.state.location;
               final searchResult = await showSearch(
                   context: context,
@@ -56,12 +64,44 @@ class SearchBar extends StatelessWidget {
   }
 
   void searchReturn(BuildContext context, SearchDestinationResult? result) {
-    // print('cancel: ${result!.cancel}');
-    // print('manual: ${result!.manual}');
     if (result!.cancel) return;
+
     if (result.manual) {
       final searchBloc = Provider.of<SearchBloc>(context, listen: false);
       searchBloc.add(OnActivateManualMarkerEvent());
     }
+    else
+    {
+      final locationBloc = Provider.of<MyLocationBloc>(context, listen: false);
+      LatLng? userLocation = locationBloc.state.location;
+
+      final stopsBloc =  Provider.of<StopsBloc>(context, listen: false);
+      List<Stop> stops = stopsBloc.state.stops;
+
+      final busesBloc =  Provider.of<BusesBloc>(context, listen: false);
+      List<Bus> buses = busesBloc.state.buses;
+
+      DestinationService destinationService = DestinationService(buses: buses, stops: stops, userLocation: userLocation!, destination: result.position!);
+
+      List<Option> options = destinationService.getOptions();
+      
+      if(options.isNotEmpty)
+      {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OptionsPage(options: options, destino: result.position!,)
+        ),
+  );
+      }
+      else
+      {
+        Fluttertoast.showToast(msg: "No encontramos opciones para ese destino :(" );
+      }
+    }
+
+    
+
+
+
   }
 }

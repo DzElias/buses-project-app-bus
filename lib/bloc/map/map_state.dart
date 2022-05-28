@@ -7,7 +7,8 @@ class MapState extends Equatable {
 
   const MapState({
     this.isMapInitialized = false, 
-    this.followUser = false
+    this.followUser = false,
+    
   });
 
   MapState copyWith({

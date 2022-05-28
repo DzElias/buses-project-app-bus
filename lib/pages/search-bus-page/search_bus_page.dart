@@ -42,6 +42,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
         extendBodyBehindAppBar: true,
         // floatingActionButton: track ? cancelTrackBtn() : Container(),
         appBar: const CustomAppBar(
+         backgroundColor:  Colors.white,
           title: Text(
             'Buscar Buses',
             style: TextStyle(

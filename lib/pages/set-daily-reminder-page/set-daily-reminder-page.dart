@@ -40,6 +40,7 @@ class _SetDailyReminderPageState extends State<SetDailyReminderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(
+        backgroundColor: Colors.white,
         title: Text('Configurar recordatorio ',
             style: TextStyle(
                 fontSize: 17,

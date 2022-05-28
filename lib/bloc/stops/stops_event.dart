@@ -8,6 +8,6 @@ abstract class StopsEvent extends Equatable {
 }
 
 class OnStopsFoundEvent extends StopsEvent {
-  final List<BusStop> stops;
+  final List<Stop> stops;
   const OnStopsFoundEvent(this.stops);
 }
