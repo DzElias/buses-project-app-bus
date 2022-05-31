@@ -1,4 +1,4 @@
-import 'package:bustracking/bloc/bloc/travel_bloc.dart';
+import 'package:bustracking/bloc/travel/travel_bloc.dart';
 import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/bloc/map/map_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
           BlocProvider(create: (_) => MapBloc()),
           BlocProvider(create: (_) => StopsBloc(stopService: StopService())),
           BlocProvider(create: (_) => BusesBloc(busService: BusService())),
-          BlocProvider(create: (_) => TravelBloc())
+          BlocProvider(create: (_) => TravelBloc()),
         ],
         child: Builder(builder: (context) {
           return MediaQuery(

@@ -96,6 +96,13 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
       }
     }
 
+    if(rutaCoords.isNotEmpty){
+      if(calculateDistance(rutaCoords.last)<10 ){
+      rutaCoords = [];
+      }
+    }
+
+
     return Scaffold(
         floatingActionButton: floatingActionButton(context),
         floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
@@ -131,8 +138,7 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
     ) : SizedBox();
   }
 
-  Widget showMap(
-      MyLocationState state, LatLng? lastLocation, BuildContext context) {
+  Widget showMap(MyLocationState state, LatLng? lastLocation, BuildContext context) {
     if (!state.locationExist) {
       return Center(
         child: CircularProgressIndicator(
@@ -313,9 +319,7 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
     }
 
     setState(() {
-      rutaCoords = points
-          .map((point) => LatLng(point.latitude / 10, point.longitude / 10))
-          .toList();
+      rutaCoords = points.map((point) => LatLng(point.latitude / 10, point.longitude / 10)).toList();
 
       animatedMapMove(inicio, 18);
       // rutaCoords[((rutaCoords.length) / 2).round()]

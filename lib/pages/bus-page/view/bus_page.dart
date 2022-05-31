@@ -1,4 +1,4 @@
-import 'package:bustracking/bloc/bloc/travel_bloc.dart';
+import 'package:bustracking/bloc/travel/travel_bloc.dart';
 import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/bloc/map/map_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
@@ -46,6 +46,10 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
     super.initState();
   }
 
+  Future<bool> _onWillPop() async {
+    return false; //<-- SEE HERE
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as BusPageArguments;
@@ -60,97 +64,107 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
     final panelHeightClosed = MediaQuery.of(context).size.height * 0.1;
     final panelHeightOpen = MediaQuery.of(context).size.height * 0.53;
 
-    return Scaffold(
-        appBar: CustomAppBar(
-          backgroundColor: Colors.white,
-          centerTitle: false,
-          title: appbarTitle(busStopLatLng, busID),
-        ),
-        body: BlocBuilder<TravelBloc, TravelState>(
-          builder: (context, trstate) {
-            TravelState trs = trstate;
+    return BlocBuilder<TravelBloc, TravelState>(
+      builder: (context, trstate) {
+        TravelState trs = trstate;
 
-            return Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                BlocBuilder<BusesBloc, BusesState>(
-                  builder: (context, state) {
-                    var bus = state.buses[state.buses
-                        .indexWhere((element) => element.id == busID)];
-                    LatLng busLatLng = LatLng(bus.latitud, bus.longitud);
+        return WillPopScope(
+          onWillPop: (trstate.waiting || trstate.waiting || trs.isHere) ? _onWillPop :() async{return true;} ,
+          child: Scaffold(
+              appBar: CustomAppBar(
+                backgroundColor: Colors.white,
+                centerTitle: false,
+                title: appbarTitle(busStopLatLng, busID),
+                goBack: (trstate.waiting || trstate.waiting || trs.isHere) ? false : true),
+              body: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      BlocBuilder<BusesBloc, BusesState>(
+                        builder: (context, state) {
+                          var bus = state.buses[state.buses.indexWhere((element) => element.id == busID)];
+                          LatLng busLatLng = LatLng(bus.latitud, bus.longitud);
 
-                    return MapWidget(
-                        selectedStops: stopsSelected,
-                        destino2: destino,
-                        viajando: trs.traveling,
-                        markers: [
-                          Marker(
-                              height: 60,
-                              width: 60,
-                              point: busLatLng,
-                              builder: (_) => Stack(
-                                    children: const [
-                                      Center(
-                                          child: Image(
-                                        image:
-                                            AssetImage('assets/bus_point.png'),
-                                        height: 60,
-                                        width: 60,
-                                      )),
-                                    ],
+                          return MapWidget(
+                              selectedStops: stopsSelected,
+                              destino2: destino,
+                              viajando: trs.traveling,
+                              markers: [
+                                Marker(
+                                    height: 60,
+                                    width: 60,
+                                    point: busLatLng,
+                                    builder: (_) => Stack(
+                                          children: const [
+                                            Center(
+                                                child: Image(
+                                              image: AssetImage(
+                                                  'assets/bus_point.png'),
+                                              height: 60,
+                                              width: 60,
+                                            )),
+                                          ],
+                                        ))
+                              ],
+                              busStopLatLng: busStopLatLng,
+                              busRoute: bus.ruta);
+                        },
+                      ),
+                      BlocBuilder<BusesBloc, BusesState>(
+                        builder: (context, state) {
+                          Bus bus = state.buses[state.buses
+                              .indexWhere((element) => element.id == busID)];
+                          return slidingUpPanel(
+                              panelHeightOpen, panelHeightClosed, stopId, bus);
+                        },
+                      ),
+                      (trs.waiting || trs.isHere)
+                          ? Positioned(
+                              top: 0,
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                child: Center(
+                                    child: !trs.isHere
+                                        ? Text("Espera al bus en la parada",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18))
+                                        : Text(
+                                            "El bus esta llegando, identificalo y subite!",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18),
+                                          )),
+                                decoration: BoxDecoration(color: Colors.green),
+                                width: MediaQuery.of(context).size.width,
+                                height: 50,
+                              ))
+                          : SizedBox(),
+                      (!trs.waiting && !trs.isHere && !trs.traveling)
+                          ? Positioned(
+                              right: 20,
+                              bottom: fabHeight,
+                              child: waitButton(busStopLatLng, stopId, args.bus,
+                                  args.stop, destino))
+                          : (!trs.traveling && trs.isHere)
+                              ? Positioned(
+                                  bottom: fabHeight,
+                                  right: 20,
+                                  child: Container(
+                                    child: confirmSubBtn(
+                                        args.bus, destino, args.stop),
                                   ))
-                        ],
-                        busStopLatLng: busStopLatLng,
-                        busRoute: bus.ruta);
-                  },
+                              : SizedBox(),
+                      trs.waiting? waitingBuilder(busStopLatLng, stopId, trs)
+                          : SizedBox(),
+                      trs.traveling
+                          ? viajandoBuilder(destino, context)
+                          : Container()
+                    ],
+                  )
                 ),
-                BlocBuilder<BusesBloc, BusesState>(
-                  builder: (context, state) {
-                    Bus bus = state.buses[state.buses.indexWhere((element) => element.id == busID)];
-                    return slidingUpPanel(panelHeightOpen, panelHeightClosed, stopId, bus);
-                  },
-                ),
-                (trs.waiting || trs.isHere)
-                    ? Positioned(
-                        top: 0,
-                        child: Container(
-                          padding: EdgeInsets.all(10),
-                          child: Center(
-                              child: !trs.isHere
-                                  ? Text("Espera al bus en la parada",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 18))
-                                  : Text(
-                                      "El bus esta llegando, identificalo y subite!",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 18),
-                                    )),
-                          decoration: BoxDecoration(color: Colors.green),
-                          width: MediaQuery.of(context).size.width,
-                          height: 50,
-                        ))
-                    : SizedBox(),
-                (!trs.waiting && !trs.isHere && !trs.traveling)
-                    ? Positioned(
-                        right: 20,
-                        bottom: fabHeight,
-                        child: waitButton(busStopLatLng, stopId))
-                    : (!trs.traveling && trs.isHere)
-                        ? Positioned(
-                            bottom: fabHeight,
-                            right: 20,
-                            child: Container(
-                              child: confirmSubBtn(),
-                            ))
-                        : SizedBox(),
-                trs.waiting
-                    ? waitingBuilder(busStopLatLng, stopId, trs)
-                    : SizedBox(),
-                trs.traveling ? viajandoBuilder(destino, context) : Container()
-              ],
-            );
-          },
-        ));
+        );
+      },
+    );
   }
 
   var sw = false;
@@ -159,7 +173,8 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
       LatLng busStopLatLng, String stopId, TravelState trs) {
     return BlocBuilder<BusesBloc, BusesState>(
       builder: (context, state) {
-        var bus = state.buses[state.buses.indexWhere((element) => element.id == busID)];
+        var bus = state
+            .buses[state.buses.indexWhere((element) => element.id == busID)];
         LatLng busLatLng = LatLng(bus.latitud, bus.longitud);
 
         if (calculateDistance(busLatLng, busStopLatLng) < 200) {
@@ -167,23 +182,50 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
               "Acercate a la parada e identifica al bus", 1);
 
           if (!sw) {
-            Provider.of<SocketService>(context, listen: false)
-                .socket
-                .emit("substractWait", stopId);
+            Provider.of<SocketService>(context, listen: false).socket.emit("substractWait", stopId);
             sw = true;
           }
 
-          Provider.of<TravelBloc>(context, listen: false)
-              .add(OnIsHereEvent(true));
-          Provider.of<TravelBloc>(context, listen: false)
-              .add(OnWaitingEvent(false));
+          Provider.of<TravelBloc>(context, listen: false).add(OnIsHereEvent(true));
+          Provider.of<TravelBloc>(context, listen: false).add(OnDesWaitingEvent());
         }
-        return Container();
+        return Positioned(
+          bottom: fabHeight,
+          right: 20,
+          child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary:  Colors.redAccent,
+                shape: new RoundedRectangleBorder(
+                  borderRadius: new BorderRadius.circular(20.0),
+                ),
+              ),
+              onPressed: () {
+                Provider.of<TravelBloc>(context, listen: false).add(OnDesWaitingEvent());
+                Provider.of<SocketService>(context, listen: false).socket.emit("substractWait", stopId);
+
+                },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.hourglass_empty),
+                    Text(
+                      'Cancelar espera',
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        );
       },
     );
   }
 
-  ElevatedButton confirmSubBtn() {
+  ElevatedButton confirmSubBtn(Bus bus, LatLng destino, Stop stop) {
     return ElevatedButton(
       child: Padding(
         padding: const EdgeInsets.only(top: 10, bottom: 10),
@@ -205,9 +247,9 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
         Provider.of<TravelBloc>(context, listen: false)
             .add(OnIsHereEvent(false));
         Provider.of<TravelBloc>(context, listen: false)
-            .add(OnWaitingEvent(false));
+            .add(OnDesWaitingEvent());
         Provider.of<TravelBloc>(context, listen: false)
-            .add(OnTravelingEvent(true));
+            .add(OnTravelingEvent(bus: bus, destino: destino, stop: stop));
       },
       style: ElevatedButton.styleFrom(
         primary: Colors.red,
@@ -247,7 +289,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
                 1);
 
             Provider.of<TravelBloc>(context, listen: false)
-                .add(OnTravelingEvent(false));
+                .add(OnDesTravelingEvent());
           }
         }
 
@@ -281,7 +323,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
                             myLocationBloc.state.location!, 16, mapController);
 
                         Provider.of<TravelBloc>(context, listen: false)
-                            .add(OnTravelingEvent(false));
+                            .add(OnDesTravelingEvent());
                       },
                       style: ElevatedButton.styleFrom(
                         primary: Colors.red,
@@ -358,9 +400,9 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Linea ${bus.linea} ',
+                  'Linea ${bus.linea} - ${bus.titulo}',
                   style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: Colors.black87,
                       fontFamily: 'Betm-Medium',
                       fontWeight: FontWeight.bold),
@@ -480,7 +522,8 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
     return stop;
   }
 
-  waitButton(LatLng busStopLatLng, String stopID) {
+  waitButton(
+      LatLng busStopLatLng, String stopID, Bus bus, Stop stop, LatLng destino) {
     return BlocBuilder<MyLocationBloc, MyLocationState>(
       builder: (context, state) {
         return ElevatedButton(
@@ -499,7 +542,11 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
                 service.socket.emit("addWait", stopID);
                 sw = false;
                 Provider.of<TravelBloc>(context, listen: false)
-                    .add(OnWaitingEvent(true));
+                    .add(OnWaitingEvent(
+                  bus: bus,
+                  stop: stop,
+                  destino: destino,
+                ));
               }
             },
             child: Padding(

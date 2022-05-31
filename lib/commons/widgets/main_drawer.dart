@@ -38,22 +38,22 @@ class MainDrawer extends StatelessWidget {
                     decoration: BoxDecoration(
                         shape: BoxShape.rectangle,
                         image: DecorationImage(
-                            image: AssetImage("assets/selfie-woman.jpg"),
-                            fit: BoxFit.fill)),
+                            image: AssetImage("assets/bus.png"),
+                            fit: BoxFit.contain)),
                   ),
                   Container(
                       margin: EdgeInsets.only(top: 15, bottom: 15),
                       child: Column(
                         children: [
                           Text(
-                            "Maria",
+                            "Alla voy",
                             style: TextStyle(
                               fontSize: 20,
                             ),
                             textAlign: TextAlign.center,
                           ),
                           Text(
-                            "Gonzalez",
+                            "",
                             style: TextStyle(
                               fontSize: 20,
                             ),
@@ -63,10 +63,10 @@ class MainDrawer extends StatelessWidget {
                       )),
                   ListTile(
                     leading:
-                        Icon(Icons.location_city, color: Colors.red, size: 30),
+                        Icon(Icons.map, color: Colors.red, size: 30),
                     title: Text(
                       "Paradas cercanas",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     onTap: () {
                       if (ModalRoute.of(context)!.settings.name !=
@@ -83,7 +83,7 @@ class MainDrawer extends StatelessWidget {
                         color: Colors.green, size: 30),
                     title: Text(
                       "Buscar autobuses",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     onTap: () {
                       if (ModalRoute.of(context)!.settings.name !=
@@ -94,46 +94,46 @@ class MainDrawer extends StatelessWidget {
                       }
                     },
                   ),
-                  ListTile(
-                    leading: Icon(Icons.notifications_active,
-                        color: Colors.blueAccent, size: 30),
-                    title: Text(
-                      "Recordatorios diarios",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Betm-Medium'),
-                    ),
-                    onTap: () {
-                      if (ModalRoute.of(context)!.settings.name !=
-                          'daily-reminders-page') {
-                        Navigator.pushReplacementNamed(
-                            context, 'daily-reminders-page');
-                      } else {
-                        Navigator.pop(context);
-                      }
-                    },
-                  ),
+                  // ListTile(
+                  //   leading: Icon(Icons.notifications_active,
+                  //       color: Colors.blueAccent, size: 30),
+                  //   title: Text(
+                  //     "Recordatorios diarios",
+                  //     style: TextStyle(
+                  //         fontWeight: FontWeight.bold,
+                  //         fontFamily: 'Betm-Medium'),
+                  //   ),
+                  //   onTap: () {
+                  //     if (ModalRoute.of(context)!.settings.name !=
+                  //         'daily-reminders-page') {
+                  //       Navigator.pushReplacementNamed(
+                  //           context, 'daily-reminders-page');
+                  //     } else {
+                  //       Navigator.pop(context);
+                  //     }
+                  //   },
+                  // ),
                 ],
               ),
             ),
           ),
-          Expanded(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: ListTile(
-                leading:
-                    Icon(Icons.logout_outlined, color: Colors.orange, size: 30),
-                title: Text(
-                  "Cerrar sesion",
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  //TODO: cerrar sesion xD
-                  Navigator.pushReplacementNamed(context, 'login');
-                },
-              ),
-            ),
-          ),
+          // Expanded(
+          //   child: Align(
+          //     alignment: Alignment.bottomCenter,
+          //     child: ListTile(
+          //       leading:
+          //           Icon(Icons.logout_outlined, color: Colors.orange, size: 30),
+          //       title: Text(
+          //         "Cerrar sesion",
+          //         style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          //       ),
+          //       onTap: () {
+          //         //TODO: cerrar sesion xD
+          //         Navigator.pushReplacementNamed(context, 'login');
+          //       },
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     ));

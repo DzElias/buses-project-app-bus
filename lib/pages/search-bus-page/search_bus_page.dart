@@ -1,5 +1,9 @@
 import 'package:bustracking/bloc/buses/buses_bloc.dart';
+import 'package:bustracking/bloc/map/map_bloc.dart';
+import 'package:bustracking/bloc/stops/stops_bloc.dart';
 import 'package:bustracking/commons/models/bus.dart';
+import 'package:bustracking/commons/models/stop.dart';
+import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
 
 import 'package:bustracking/commons/widgets/main_drawer.dart';
@@ -7,6 +11,7 @@ import 'package:bustracking/search/search_bus_delegate.dart';
 import 'package:bustracking/utils/cachedTileProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -26,9 +31,13 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
 
   String? id;
   bool track = false;
+  String busRoute = "";
+  List<Marker> markers = [];
   @override
   void initState() {
     super.initState();
+    createStopsMarkers();
+
   }
 
   @override
@@ -38,15 +47,16 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    PolylinePoints polylinePoints = PolylinePoints();
     return Scaffold(
         extendBodyBehindAppBar: true,
         // floatingActionButton: track ? cancelTrackBtn() : Container(),
         appBar: const CustomAppBar(
-         backgroundColor:  Colors.white,
+         backgroundColor:  Colors.transparent,
           title: Text(
             'Buscar Buses',
             style: TextStyle(
-                fontSize: 17,
+                fontSize: 20,
                 color: Colors.black87,
                 fontFamily: 'Betm-Medium',
                 fontWeight: FontWeight.bold),
@@ -56,9 +66,10 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
         drawer: MainDrawer(),
         body: Stack(
           children: [
-            BlocBuilder<BusesBloc, BusesState>(
+              BlocBuilder<BusesBloc, BusesState>(
               builder: (context, state) {
                 List<Bus> buses = state.buses;
+                final points = busRoute.isNotEmpty? polylinePoints.decodePolyline(busRoute): [];
                 return FlutterMap(
                   mapController: mapController,
                   options: MapOptions(
@@ -77,11 +88,24 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
                           'id': MAPBOX_STYLE
                         },
                         tileProvider: const CachedTileProvider()),
+                    points.isNotEmpty? PolylineLayerOptions(polylines: [
+                    Polyline(
+                        strokeWidth: 3.0,
+                        color: Colors.green,
+                        points: points
+                            .map((point) => LatLng(
+                                point.latitude / 10, point.longitude / 10))
+                            .toList())
+                  ])
+                : PolylineLayerOptions(),
+                    MarkerLayerOptions(markers: markers),
                     MarkerLayerOptions(markers: getActiveBuses(buses)),
+                    
                   ],
                 );
               },
-            ),
+            )
+            ,
             searchBusContainer(),
             track ? trackBus(id) : SizedBox(),
             track ? cancelTrackBtn() : Container(),
@@ -91,7 +115,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
 
   Container searchBusContainer() {
     return Container(
-      margin: const EdgeInsets.only(top: 90),
+      margin: const EdgeInsets.only(top: 100),
       child: Align(
         alignment: Alignment.topCenter,
         child: ElevatedButton(
@@ -160,7 +184,9 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
   }
 
   Widget trackBus(String? id) {
+    busRoute = busById(id).ruta;
     return BlocBuilder<BusesBloc, BusesState>(builder: (context, state) {
+
       var buses = state.buses;
       int index = buses.indexWhere((element) => element.id == id);
 
@@ -186,6 +212,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
           setState(() {
             track = false;
             id = "";
+            busRoute = "";
           });
         },
         elevation: 3,
@@ -236,5 +263,21 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
     var i = buses.indexWhere((element) => element.id == _id);
 
     return buses[i];
+  }
+
+  void createStopsMarkers() {
+    final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
+    List<Stop> stops = stopsBloc.state.stops;
+    List<Marker> _markerList = [];
+
+    for(Stop stop in stops){
+      Marker marker = Marker(point: LatLng(stop.latitud, stop.longitud), height: 60.0, width: 60.0, builder: (_) => BusStopMarker());
+      _markerList.add(marker); 
+    }
+
+    markers = _markerList;
+    Future.delayed(Duration(seconds: 3)).then((value) {
+      setState(() {});
+    });
   }
 }

@@ -18,3 +18,8 @@ class OnMap2InitializedEvent extends MapEvent{
   const OnMap2InitializedEvent(this.controller);
 }
 
+class OnAddMarkers extends MapEvent{
+  final List<Marker> markers;
+  const OnAddMarkers(this.markers);
+}
+

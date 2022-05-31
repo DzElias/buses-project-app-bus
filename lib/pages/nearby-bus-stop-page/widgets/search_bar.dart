@@ -24,7 +24,7 @@ class SearchBar extends StatelessWidget {
       children: [
         Container(
           margin: const EdgeInsets.only(
-            top: 90,
+            top: 100,
           ),
           child: ElevatedButton(
             onPressed: () async {

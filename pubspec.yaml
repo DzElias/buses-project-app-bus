@@ -49,6 +49,7 @@ dependencies:
   flutter_native_splash: ^2.1.1
   flutter_local_notifications: ^9.4.0
   fluttertoast: ^8.0.9
+  internet_connection_checker: ^0.0.1
   
 
 

@@ -17,6 +17,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
   MapBloc() : super(const MapState()) {
     on<OnMapInitializedEvent>(_onInitMap );
     on<OnMap2InitializedEvent>(_onInitMap2 );
+    on<OnAddMarkers>(_onAddMarkers);
   }
 
   void _onInitMap(OnMapInitializedEvent event, Emitter<MapState> emit){
@@ -31,6 +32,12 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     mapController2 = event.controller;
     emit(state.copyWith(isMapInitialized: false));
     emit(state.copyWith(isMapInitialized: true));
+  }
+
+  void _onAddMarkers(OnAddMarkers event, Emitter<MapState> emit){
+    List<Marker> markers = event.markers;
+    emit(state.copyWith(markers: markers));
+
   }
 
 

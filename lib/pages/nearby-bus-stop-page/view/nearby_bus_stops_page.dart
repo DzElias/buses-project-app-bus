@@ -4,11 +4,13 @@ import 'package:bustracking/bloc/buses/buses_bloc.dart';
 import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
 import 'package:bustracking/bloc/search/search_bloc.dart';
 import 'package:bustracking/bloc/stops/stops_bloc.dart';
+import 'package:bustracking/bloc/travel/travel_bloc.dart';
+import 'package:bustracking/commons/widgets/main_drawer.dart';
+import 'package:bustracking/pages/bus-page/models/bus_page_arguments.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/manual_marker.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/nearby_bus_stops_map.dart';
 
 import 'package:bustracking/commons/widgets/custom-appbar.dart';
-import 'package:bustracking/commons/widgets/main_drawer.dart';
 import 'package:bustracking/pages/nearby-bus-stop-page/widgets/search_bar.dart';
 import 'package:bustracking/services/socket_service.dart';
 
@@ -44,7 +46,15 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
 
-    initialization();
+
+    Future.delayed(Duration.zero, () {
+      initialization();
+    });
+    
+    final travelBloc = Provider.of<TravelBloc>(context, listen: false);
+    if(travelBloc.state.traveling || travelBloc.state.waiting){
+        Navigator.pushNamed(context, "bus-page", arguments: BusPageArguments(bus: travelBloc.state.bus!, stop: travelBloc.state.stop!, stopsSelected: travelBloc.state.stopsSelected, waiting: travelBloc.state.waiting, destino: travelBloc.state.destino!));
+    }
 
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -98,16 +108,16 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
             backgroundColor: Colors.transparent,
             centerTitle: true,
             title: Text(
-             'Paradas de Buses Cercanas',
+             'Paradas de Buses',
               style: TextStyle(
-                  fontSize: 17,
+                  fontSize: 20,
                   color: Colors.black87,
                   fontFamily: 'Betm-Medium',
                   fontWeight: FontWeight.bold
                 ),
             ),
           ),
-          // drawer: MainDrawer(),
+          drawer: MainDrawer(),
           body: FutureBuilder(
             future: checkGpsAccess(context),
             builder: (BuildContext context, AsyncSnapshot snapshot) 
@@ -118,10 +128,11 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
                   builder: (context, state) 
                   {
                     return Stack(
-                      children: const 
+                      children:
                       [
                         NearbyBusStopsMap(),
                         SearchBar(),
+                       
                       ],
                     );
                   },
@@ -137,13 +148,12 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
     );
   }
 
-  initialization() 
-  async {
+  initialization()async {
     final busesBloc = Provider.of<BusesBloc>(context, listen: false);
     busesBloc.getBuses();
     final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
     stopsBloc.getStops();
-    final socketService = Provider.of<SocketService>(context, listen: false);
+    final socketService = Provider.of<SocketService>(context);
     socketService.socket.connect();
     socketService.socket.on('change-locationReturn', busesBloc.handleBusLocation);
     socketService.socket.on('changeNextStopReturn', busesBloc.handleBusProxStop);
