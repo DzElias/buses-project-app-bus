@@ -74,7 +74,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
               appBar: CustomAppBar(
                 backgroundColor: Colors.white,
                 centerTitle: false,
-                title: appbarTitle(busStopLatLng, busID),
+                title: appbarTitle(stopById(stopId), busID),
                 goBack: (trstate.waiting || trstate.waiting || trs.isHere) ? false : true),
               body: Stack(
                     alignment: Alignment.topCenter,
@@ -340,7 +340,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
     );
   }
 
-  calculateDistance(LatLng point, LatLng myLocation) {
+  int calculateDistance(LatLng point, LatLng myLocation) {
     //TODO: si es menor a mil pasar metros y si es mas pasar a km y redondear
     var _distanceInMeters = Geolocator.distanceBetween(point.latitude,
         point.longitude, myLocation.latitude, myLocation.longitude);
@@ -349,12 +349,46 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
     return distance;
   }
 
-  List<int> calculateTimeInT(LatLng point, LatLng myLocation) {
+  
+  calculateTime(Bus bus, String stopId, bool retrn){
+    int nextStopIndex = bus.paradas.indexWhere((element) => element == bus.proximaParada);
+    int stopIndex = bus.paradas.indexWhere((element) => element == stopId);
+  
+
+    int distance = 0;
+
+    for(int i = nextStopIndex; i != stopIndex;)
+    {
+      
+
+      var stopA = stopById(bus.paradas[i]);
+      var stopB;
+
+
+      if((i + 1) > bus.paradas.indexWhere((element) => element == bus.paradas.last))
+      {
+        stopB = stopById(bus.paradas[0]);
+      }
+      if((i+1) <= bus.paradas.indexWhere((element) => element == bus.paradas.last)){
+        stopB = stopById(bus.paradas[i + 1]);
+      }
+
+      LatLng stopALatLng = LatLng(stopA.latitud, stopA.longitud);
+      LatLng stopBLatLng = LatLng(stopB.latitud, stopB.longitud);
+
+      distance = distance + calculateDistance(stopALatLng, stopBLatLng);
+
+      if(i == bus.paradas.indexWhere((element) => element == bus.paradas.last))
+      {
+        i = 0; 
+      }else
+      {
+        i++;
+      }
+    
+    }
     List<int> time = [];
-
     int hours = 0;
-    int distance = calculateDistance(point, myLocation);
-
     int minutes = (((distance / 1000) * 60) / 12).round();
     while (minutes > 60) {
       hours = hours + 1;
@@ -363,37 +397,33 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
 
     time.add(hours);
     time.add(minutes);
-    return time;
-  }
 
-  calculateTime(LatLng point, LatLng myLocation) {
-    String time;
-    int hours = 0;
-    int distance = calculateDistance(point, myLocation);
-
-    //pasar tiempo a segundos y si son menos de 60 mostrar segundos xD
-    int minutes = (((distance / 1000) * 60) / 12).round();
-    while (minutes > 60) {
-      hours = hours + 1;
-      minutes = minutes - 60;
-    }
-    if (hours == 0 && minutes > 0) {
-      time = '$minutes min';
+    if(retrn){
       return time;
-    } else if (minutes == 0) {
-      time = "LLegando";
-      return time;
-    } else {
-      time = "$hours h $minutes min";
     }
-  }
 
-  appbarTitle(LatLng busStopLatLng, String busId) {
+    String timeStr = "30 seg";
+
+    if(time[0] == 0  && time[1] != 0){
+      timeStr = "${time[1]} min";
+    }else if (time[0] != 0  && time[1] != 0){
+      timeStr = "${time[0]} h ${time[1]} min";
+    }else if(time[0] != 0  && time[1] == 0){
+      timeStr = "${time[0]} h";
+    }
+     return timeStr;
+
+  
+}
+
+ 
+
+  appbarTitle(Stop stop, String busId) {
+
     return BlocBuilder<BusesBloc, BusesState>(
       builder: (context, state) {
-        Bus bus = state
-            .buses[state.buses.indexWhere((element) => element.id == busId)];
-
+        Bus bus = state.buses[state.buses.indexWhere((element) => element.id == busId)];
+        String time = calculateTime(bus, stop.id, false);
         return Column(
           children: [
             Row(
@@ -410,7 +440,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
                 Row(
                   children: [
                     Text(
-                      "(${calculateTime(LatLng(bus.latitud, bus.longitud), busStopLatLng)})",
+                      "($time)",
                       style: TextStyle(color: Colors.blue, fontSize: 13),
                     ),
                     Icon(
@@ -428,51 +458,21 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget slidingUpPanel(double panelHeightOpen, double panelHeightClosed,
-      String stopId, Bus bus) {
+  Widget slidingUpPanel(double panelHeightOpen, double panelHeightClosed, String stopId, Bus bus) {
     List route = bus.paradas;
     bool onnOrOff = false;
     var paradas = route.map((stopID) {
-      if (stopID == stopId) {
+
+      if (stopID == bus.proximaParada) {
         onnOrOff = true;
       }
       Stop stop = stopById(stopID);
-      int index = bus.paradas.indexWhere((element) => element == stopID);
-      var checkIn = '';
 
-      if ((index - 1) < 0) {
-        checkIn = calculateTime(LatLng(bus.latitud, bus.longitud),
-            LatLng(stop.latitud, stop.longitud));
-      } else {
-        var time = "";
-        int hours = 0;
-        int minutes = 0;
-        var j = index - 1;
-        for (int i = index; j >= 0; i--) {
-          var stop1 = stopById(bus.paradas[j]);
-          var stop2 = stopById(bus.paradas[i]);
-          List<int> listime = calculateTimeInT(
-              LatLng(stop1.latitud, stop1.longitud),
-              LatLng(stop2.latitud, stop2.longitud));
-          hours = hours + listime[0];
-          minutes = minutes + listime[1];
-          j--;
-        }
-        if (hours == 0 && minutes > 0) {
-          time = '$minutes min';
-        } else if (minutes == 0) {
-          time = "30 seg";
-        } else {
-          time = "$hours h $minutes min";
-        }
-
-        checkIn = time;
-      }
-
+      List<int> time = calculateTime(bus, stop.id, true);
       return BusRoute(
           onn: onnOrOff,
           directionName: stop.titulo,
-          checkIn: onnOrOff ? checkIn : "Ya paso");
+          time: onnOrOff ? time : [-1]);
     }).toList();
     return SlidingUpPanel(
         controller: panelController,
@@ -579,8 +579,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
     }
   }
 
-  animatedMapMove(
-      LatLng destLocation, double destZoom, MapController mapController) {
+  animatedMapMove(LatLng destLocation, double destZoom, MapController mapController) {
     // Create some tweens. These serve to split up the transition from one location to another.
     // In our case, we want to split the transition be<tween> our current map center and the destination.
     final _latTween = Tween<double>(

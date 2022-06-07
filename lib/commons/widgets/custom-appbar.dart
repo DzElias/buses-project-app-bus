@@ -56,7 +56,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       systemOverlayStyle: SystemUiOverlayStyle(
         statusBarIconBrightness: Brightness.dark,
       ),
-      automaticallyImplyLeading: goBack,
+      automaticallyImplyLeading:(isConnected && goBack),
       iconTheme: IconThemeData(
         color: Colors.black,
       ),

@@ -44,7 +44,7 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
 
   @override
   void initState() {
-    WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
 
 
     Future.delayed(Duration.zero, () {
@@ -75,7 +75,7 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
   @override
   void dispose() {
     serviceStatusStream.cancel();
-    WidgetsBinding.instance?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
 
     super.dispose();
   }
@@ -152,14 +152,18 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
     final busesBloc = Provider.of<BusesBloc>(context, listen: false);
     busesBloc.getBuses();
     final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
+
     stopsBloc.getStops();
-    final socketService = Provider.of<SocketService>(context);
+    final socketService = Provider.of<SocketService>(context, listen: false);
+
     socketService.socket.connect();
     socketService.socket.on('change-locationReturn', busesBloc.handleBusLocation);
     socketService.socket.on('changeNextStopReturn', busesBloc.handleBusProxStop);
 
     await Future.delayed(Duration(seconds: 3));
     FlutterNativeSplash.remove();
+
+    
   }
 
   checkGpsAccess(BuildContext context) async 

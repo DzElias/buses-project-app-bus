@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 class BusRoute extends StatelessWidget {
   final bool onn;
   final String directionName;
-  final String checkIn;
+  List<int> time  =  [];
 
-  const BusRoute(
+ BusRoute(
       {Key? key,
       required this.onn,
       required this.directionName,
-      required this.checkIn})
+      required this.time})
       : super(key: key);
 
   @override
@@ -21,8 +21,7 @@ class BusRoute extends StatelessWidget {
         children: [
           Container(
             width: 60,
-            child: Text(
-                  this.checkIn,
+            child: Text((time[0] != -1)? time[1] != 0? "${getTime(time[0], time[1], context )}": "Llegando" : "Ya paso",
                   style: TextStyle(color: Colors.black54, fontSize: 13),
                 ),
           ),
@@ -44,22 +43,45 @@ class BusRoute extends StatelessWidget {
                   style: TextStyle(
                       fontFamily: 'Betm-Medium',
                       fontWeight: FontWeight.w500,
-                      fontSize: 13,
+                      fontSize: 16,
                       color: onn ? Colors.black87 : Colors.black54)),
             ],
           ),
           Spacer(),
-          onn
-              ? InkWell(
-                  onTap: () {},
-                  child: Icon(
-                    Icons.notification_add,
-                    color: Colors.black54,
-                    size: 30,
-                  ))
-              : SizedBox()
+          // onn
+          //     ? InkWell(
+          //         onTap: () {},
+          //         child: Icon(
+          //           Icons.notification_add,
+          //           color: Colors.black54,
+          //           size: 30,
+          //         ))
+          //     : SizedBox()
         ],
       ),
     );
+  }
+}
+
+getTime(int hours, int min, BuildContext context){
+  
+  TimeOfDay _time = TimeOfDay.now().add(hour: hours, minute: min);
+
+  return _time.format(context);
+}
+extension TimeOfDayExtension on TimeOfDay {
+  TimeOfDay add({int hour = 0, int minute = 0}) {
+    print(hour);
+    if( (this.minute + minute) >=60){
+      hour++;
+      minute = minute - (60 - this.minute);
+    }
+    if(this.hour + hour >= 24){
+      hour = - (this.hour ) + ((this.hour + hour) - 24);
+      
+    }
+    print(hour);
+    
+    return this.replacing(hour: this.hour + hour, minute: this.minute + minute);
   }
 }

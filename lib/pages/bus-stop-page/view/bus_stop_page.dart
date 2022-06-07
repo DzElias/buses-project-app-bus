@@ -19,9 +19,6 @@ import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
 
 class BusStopPage extends StatefulWidget {
-  // final String busStopName;
-
-  // const BusStopPage({Key? key, required this.busStopName}) : super(key: key);
 
   @override
   State<BusStopPage> createState() => _BusStopPageState();
@@ -40,13 +37,11 @@ class _BusStopPageState extends State<BusStopPage> {
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as BusStopPageArguments;
+    final args = ModalRoute.of(context)!.settings.arguments as BusStopPageArguments;
     final String busStopName = args.busStopName;
     final String time = args.time;
     final LatLng busStopLatLng = args.busStopLatLng;
     final String stopId = args.stopId;
-    generateBusList(busStopLatLng);
     return Scaffold(
       appBar: CustomAppBar(
         title: appbarTitle(busStopName, time),
@@ -65,7 +60,7 @@ class _BusStopPageState extends State<BusStopPage> {
           Column(
             children: [
               Spacer(),
-              slidingUpPanel(stopId, context, busStopLatLng),
+              slidingUpPanel(stopId, context),
               SizedBox(height: 10)
             ],
           ),
@@ -74,22 +69,28 @@ class _BusStopPageState extends State<BusStopPage> {
     );
   }
 
-  List generateBusList(LatLng stopLatLng) {
+  List generateBusList(String stopId) {
     List buses = [];
     final busesBloc = Provider.of<BusesBloc>(context, listen: false);
     List<Bus> busesToAdd = busesBloc.state.buses;
 
     for (var singleBus in busesToAdd) {
-      buses.add(singleBus);
+      if(singleBus.paradas.indexWhere((element) => element == stopId) >= 0 ){
+        buses.add(singleBus);
+      }
+
     }
     
       buses.sort((a, b) {
-        Stop aProx = stopById(a.proximaParada);
-        Stop bProx = stopById(b.proximaParada);
-        LatLng aLatLng = LatLng(aProx.latitud, aProx.longitud);
-        LatLng bLatLng = LatLng(bProx.latitud, bProx.longitud);
+        List<int> aTime = calculateTime(a, stopId, true);
+        List<int> bTime = calculateTime(b, stopId, true);
 
-        return calculateDistance(aLatLng, stopLatLng).compareTo(calculateDistance(bLatLng, stopLatLng));
+        
+        aTime[1] = aTime[1] + (60*aTime[0]);
+        bTime[1] = bTime[1] + (60*bTime[0]);
+       
+
+        return (aTime[1]).compareTo((bTime[1]));
       });
     return buses;
 
@@ -132,10 +133,10 @@ class _BusStopPageState extends State<BusStopPage> {
     );
   }
 
-  slidingUpPanel(String stopId, BuildContext context, LatLng busStopLatLng) {
+  slidingUpPanel(String stopId, BuildContext context) {
     return BlocBuilder<BusesBloc, BusesState>(
       builder: (context, state) {
-        List buses = generateBusList(busStopLatLng);
+        List buses = generateBusList(stopId);
         return Container(
           margin: EdgeInsets.symmetric(horizontal: 10),
           child: Column(children: [
@@ -180,9 +181,7 @@ class _BusStopPageState extends State<BusStopPage> {
                             ? BusWidget(
                                 bus: item,
                                 stop: stopById(stopId),
-                                time: calculateTime(
-                                    LatLng(item.latitud, item.longitud),
-                                    busStopLatLng),
+                                time: calculateTime(item, stopId, false),
                               )
                             : SizedBox();
                       },
@@ -201,7 +200,74 @@ class _BusStopPageState extends State<BusStopPage> {
     return stop;
   }
 
-  calculateDistance(LatLng point, LatLng myLocation) {
+  calculateTime(Bus bus, String stopId, bool retrn){
+    int nextStopIndex = bus.paradas.indexWhere((element) => element == bus.proximaParada);
+    int stopIndex = bus.paradas.indexWhere((element) => element == stopId);
+  
+
+    int distance = 0;
+
+    for(int i = nextStopIndex; i != stopIndex;)
+    {
+      
+
+      var stopA = stopById(bus.paradas[i]);
+      var stopB;
+
+
+      if((i + 1) > bus.paradas.indexWhere((element) => element == bus.paradas.last))
+      {
+        stopB = stopById(bus.paradas[0]);
+      }
+      if((i+1) <= bus.paradas.indexWhere((element) => element == bus.paradas.last)){
+        stopB = stopById(bus.paradas[i + 1]);
+      }
+
+      LatLng stopALatLng = LatLng(stopA.latitud, stopA.longitud);
+      LatLng stopBLatLng = LatLng(stopB.latitud, stopB.longitud);
+
+      distance = distance + calculateDistance(stopALatLng, stopBLatLng);
+
+      if(i == bus.paradas.indexWhere((element) => element == bus.paradas.last))
+      {
+        i = 0; 
+      }else
+      {
+        i++;
+      }
+    
+    }
+    List<int> time = [];
+    int hours = 0;
+    int minutes = (((distance / 1000) * 60) / 12).round();
+    while (minutes > 60) {
+      hours = hours + 1;
+      minutes = minutes - 60;
+    }
+
+    time.add(hours);
+    time.add(minutes);
+
+    if(retrn){
+      return time;
+    }
+
+    String timeStr = "30 seg";
+
+    if(time[0] == 0  && time[1] != 0){
+      timeStr = "${time[1]} min";
+    }else if (time[0] != 0  && time[1] != 0){
+      timeStr = "${time[0]} h ${time[1]} min";
+    }else if(time[0] != 0  && time[1] == 0){
+      timeStr = "${time[0]} h";
+    }
+     return timeStr;
+
+  
+}
+
+
+  int calculateDistance(LatLng point, LatLng myLocation) {
     //TODO: si es menor a mil pasar metros y si es mas pasar a km y redondear
     var _distanceInMeters = Geolocator.distanceBetween(point.latitude,
         point.longitude, myLocation.latitude, myLocation.longitude);
@@ -210,24 +276,5 @@ class _BusStopPageState extends State<BusStopPage> {
     return distance;
   }
 
-  calculateTime(LatLng point, LatLng myLocation) {
-    String time;
-    int hours = 0;
-    int distance = calculateDistance(point, myLocation);
-    int minutes = (((distance / 1000) * 60) / 12).round();
-    while (minutes > 60) {
-      hours = hours + 1;
-      minutes = minutes - 60;
-    }
-    if (hours == 0 && minutes > 0) {
-      time = '$minutes min';
-      return time;
-    } else if (minutes == 0) {
-      time = "Llegando";
-      return time;
-    } else {
-      time = "$hours h $minutes min";
-      return time;
-    }
-  }
+  
 }

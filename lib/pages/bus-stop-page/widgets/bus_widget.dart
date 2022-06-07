@@ -13,7 +13,8 @@ class BusWidget extends StatelessWidget {
       {Key? key,
       
       required this.bus,
-      required this.time, required this.stop})
+      required this.time, 
+      required this.stop})
       : super(key: key);
   @override
   Widget build(BuildContext context) {

@@ -35,7 +35,7 @@ class _GpsAccessPageState extends State<GpsAccessPage>
       }
     });
     // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-    WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
   }
 
@@ -52,7 +52,7 @@ class _GpsAccessPageState extends State<GpsAccessPage>
   @override
   void dispose() {
     serviceStatusStream.cancel();
-    WidgetsBinding.instance?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
