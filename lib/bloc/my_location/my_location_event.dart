@@ -8,4 +8,6 @@ class OnLocationChange extends MyLocationEvent {
   final LatLng location;
 
   OnLocationChange(this.location);
+  
 }
+class OnSw extends MyLocationEvent {}

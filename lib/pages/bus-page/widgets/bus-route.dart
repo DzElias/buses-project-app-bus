@@ -72,15 +72,15 @@ getTime(int hours, int min, BuildContext context){
 extension TimeOfDayExtension on TimeOfDay {
   TimeOfDay add({int hour = 0, int minute = 0}) {
     print(hour);
-    if( (this.minute + minute) >=60){
+    for(int i =0; ((this.minute + minute) >= 60); i++){
       hour++;
       minute = minute - (60 - this.minute);
     }
+    
     if(this.hour + hour >= 24){
       hour = - (this.hour ) + ((this.hour + hour) - 24);
       
     }
-    print(hour);
     
     return this.replacing(hour: this.hour + hour, minute: this.minute + minute);
   }

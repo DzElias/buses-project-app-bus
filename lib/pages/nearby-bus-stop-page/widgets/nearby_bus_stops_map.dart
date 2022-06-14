@@ -42,6 +42,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
   late final AnimationController animationController;
   // late final MapController mapController;
   List<Marker> markers = [];
+   bool reloadMarkers = false;
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
     animationController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 800));
     animationController.repeat(reverse: true);
+    reloadMarkers = false;
 
     final myLocationBloc = Provider.of<MyLocationBloc>(context, listen: false);
     myLocationBloc.startFollowing();
@@ -66,6 +68,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
   }
 
   bool manualSelection = false;
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +80,9 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
       body: Stack(
         children: [
           BlocBuilder<MyLocationBloc, MyLocationState>(
-            builder: (context, state) {
-              if (state.locationExist) {
-                _myLocation = state.location!;
+            builder: (context, locationState) {
+              if (locationState.locationExist) {
+                _myLocation = locationState.location!;
 
                 return FlutterMap(
                   options: MapOptions(
@@ -107,8 +110,8 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                         Marker(
                           height: 60,
                           width: 60,
-                          point: LatLng(state.location!.latitude,
-                              state.location!.longitude),
+                          point: LatLng(locationState.location!.latitude,
+                              locationState.location!.longitude),
                           builder: (BuildContext context) =>
                               MyLocationMarker(animationController),
                         )
@@ -128,13 +131,15 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
               return BlocBuilder<SearchBloc, SearchState>(
                 builder: (context, state) {
                   
+                  stops = Provider.of<StopsBloc>(context, listen: false).state.stops;
                   if (stopsState.stops.isNotEmpty) {
-                    stops = Provider.of<StopsBloc>(context, listen: false).state.stops;
-                    stops.sort((a, b) => (calculateDistance(LatLng(a.latitud, a.longitud))).compareTo(calculateDistance(LatLng(b.latitud, b.longitud))));
-                    if(markers.isEmpty){
+
+                    if(!reloadMarkers){
+                      reloadMarkers = true;
+                      stops.sort((a, b) => (calculateDistance(LatLng(a.latitud, a.longitud))).compareTo(calculateDistance(LatLng(b.latitud, b.longitud))));
                       createBusStopsMarkers(stops);
                     }
-                    
+
                   }
 
                   if (state.manualSelection) {

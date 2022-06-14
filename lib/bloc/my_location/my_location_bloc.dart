@@ -13,6 +13,7 @@ part 'my_location_state.dart';
 class MyLocationBloc extends Bloc<MyLocationEvent, MyLocationState> {
   MyLocationBloc() : super(MyLocationState()){
     on<OnLocationChange>((event,emit) => emit(state.copyWith(locationExist: true, location: event.location)));
+    on<OnSw>((event, emit) => emit(state.copyWith(sw: true)));
   }
 
   StreamSubscription<Position>? positionStream;

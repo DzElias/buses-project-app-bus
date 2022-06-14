@@ -19,8 +19,7 @@ import 'package:latlong2/latlong.dart';
 
 import 'my-location-marker.dart';
 
-const MAPBOX_ACCESS_TOKEN =
-    'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3o4c3Nla20xbnBrMnBwMTN4cXpuOGYxIn0.wfniiVLrGVbimAqr_OKyMg';
+const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZWxpYXNkaWF6MTAwNSIsImEiOiJja3o4c3Nla20xbnBrMnBwMTN4cXpuOGYxIn0.wfniiVLrGVbimAqr_OKyMg';
 const MAPBOX_STYLE = 'mapbox/light-v10';
 const MARKER_COLOR = Colors.blueAccent;
 const MARKER_SIZE_EXPANDED = 60.0;
@@ -356,10 +355,12 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
       return time;
     }
   }
+  
   List<Marker> buildMarkers(List stops) {
   if(stops.isEmpty){
     return [];
   }
+
   List<Marker> _markerList = [];
 
   for(int i=0; i<stops.length; i++ ){

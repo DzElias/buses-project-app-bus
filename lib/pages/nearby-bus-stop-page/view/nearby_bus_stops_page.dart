@@ -57,8 +57,10 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
     }
 
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark));
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark
+      )
+    );
 
     checkGpsAccess(context);
 
@@ -82,8 +84,7 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
 
   @override
   Widget build(BuildContext context) {
-    serviceStatusStream =
-        Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
+    serviceStatusStream = Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
       if (status == ServiceStatus.disabled) {
         Navigator.pushReplacementNamed(context, 'gps-access-page');
       }
@@ -149,9 +150,14 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
   }
 
   initialization()async {
+    final locationBloc = Provider.of<MyLocationBloc>(context, listen: false);
+    final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
+    if(locationBloc.state.sw){
+      stopsBloc.state.stops.sort((a, b) => (calculateDistance(LatLng(a.latitud, a.longitud))).compareTo(calculateDistance(LatLng(b.latitud, b.longitud))));
+    }else{
     final busesBloc = Provider.of<BusesBloc>(context, listen: false);
     busesBloc.getBuses();
-    final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
+    
 
     stopsBloc.getStops();
     final socketService = Provider.of<SocketService>(context, listen: false);
@@ -160,10 +166,23 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
     socketService.socket.on('change-locationReturn', busesBloc.handleBusLocation);
     socketService.socket.on('changeNextStopReturn', busesBloc.handleBusProxStop);
 
-    await Future.delayed(Duration(seconds: 3));
-    FlutterNativeSplash.remove();
-
     
+
+    await Future.delayed(Duration(seconds: 3));
+
+    FlutterNativeSplash.remove();
+    }
+    
+  }
+   calculateDistance(LatLng point) async{
+    Position position = await Geolocator.getCurrentPosition();
+    LatLng _myLocation = LatLng(position.latitude, position.longitude);
+    //TODO: si es menor a mil pasar metros y si es mas pasar a km y redondear
+    var _distanceInMeters = Geolocator.distanceBetween(point.latitude,
+        point.longitude, _myLocation.latitude, _myLocation.longitude);
+
+    int distance = _distanceInMeters.round();
+    return distance;
   }
 
   checkGpsAccess(BuildContext context) async 
