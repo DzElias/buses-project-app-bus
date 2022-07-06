@@ -1,5 +1,5 @@
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/pages/nearby-bus-stop-page/widgets/custom-card.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/pages/nearby-bus-stop-page/widgets/custom-card.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -23,9 +23,9 @@ class StopDetails extends StatelessWidget {
         padding: const EdgeInsets.all(15.0),
         child: CustomCard(
           stopId: busStop.id,
-          stopLatLng: LatLng(busStop.latitud, busStop.longitud),
+          stopLatLng: LatLng(busStop.latitude, busStop.longitude),
           isNearest: isNearest,
-          stopName: busStop.titulo,
+          stopName: busStop.title,
           distance: (distanceInMeters > 1000)
               ? '${(distanceInMeters / 1000).round()} Km '
               : '${distanceInMeters} m ',

@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/services/bus_service.dart';
+import 'package:user_app/commons/models/bus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/Material.dart';
 
@@ -8,24 +7,28 @@ part 'buses_event.dart';
 part 'buses_state.dart';
 
 class BusesBloc extends Bloc<BusesEvent, BusesState> {
-  BusService busService;
-  BusesBloc({required this.busService}) : super(BusesState()) {
+  BusesBloc() : super(BusesState()) {
     on<OnBusesFoundEvent>(
         (event, emit) => emit(state.copyWith(buses: event.buses)));
     on<OnBusUpdateEvent>((event, emit) {
       final buses = state.buses;
       int index = buses.indexWhere((element) => element.id == event.id);
       if (index >= 0) {
-        buses[index].latitud = event.lat;
-        buses[index].longitud = event.long;
+        buses[index].latitude = event.lat;
+        buses[index].longitude = event.long;
 
         emit(state.copyWith(buses: buses));
       }
     });
   }
 
-  Future getBuses() async {
-    final buses = await busService.getBuses();
+  loadBuses(dynamic response) async {
+    List<Bus> buses = [];
+    for(var map in response){
+      Bus.fromMap(map);
+    }
+
+
     add(OnBusesFoundEvent(buses));
   }
 
@@ -35,8 +38,8 @@ class BusesBloc extends Bloc<BusesEvent, BusesState> {
     if (index >= 0) {
       String lat = payload[1];
       String long = payload[2];
-      buses[index].latitud = double.parse(lat);
-      buses[index].longitud = double.parse(long);
+      buses[index].latitude = double.parse(lat);
+      buses[index].longitude = double.parse(long);
 
       add(OnBusesFoundEvent(buses));
     }
@@ -48,7 +51,7 @@ class BusesBloc extends Bloc<BusesEvent, BusesState> {
 
     if ( index >= 0){
       String proxStop = payload[1];
-      buses[index].proximaParada = proxStop;
+      buses[index].nextStop = proxStop;
 
       add(OnBusesFoundEvent(buses));
 

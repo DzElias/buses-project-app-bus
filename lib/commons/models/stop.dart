@@ -1,43 +1,42 @@
 // To parse this JSON data, do
 //
-//     final Stop = StopFromJson(jsonString);
+//     final stop = stopFromMap(jsonString);
 
 import 'package:meta/meta.dart';
 import 'dart:convert';
-import 'package:latlong2/latlong.dart';
+
+Stop stopFromMap(String str) => Stop.fromMap(json.decode(str));
+
+String stopToMap(Stop data) => json.encode(data.toMap());
 
 class Stop {
     Stop({
         required this.id,
-        required this.titulo,
-        required this.latitud,
-        required this.longitud,
-        required this.esperas,
+        required this.title,
+        required this.latitude,
+        required this.longitude,
+        required this.waiting,
     });
 
     String id;
-    String titulo;
-    double latitud;
-    double longitud;
-    int esperas;
+    String title;
+    double latitude;
+    double longitude;
+    int waiting;
 
-    factory Stop.fromRawJson(String str) => Stop.fromJson(json.decode(str));
-
-    String toRawJson() => json.encode(toJson());
-
-    factory Stop.fromJson(Map<String, dynamic> json) => Stop(
+    factory Stop.fromMap(Map<String, dynamic> json) => Stop(
         id: json["_id"],
-        titulo: json["titulo"],
-        latitud: json["latitud"].toDouble(),
-        longitud: json["longitud"].toDouble(),
-        esperas: json["esperas"].toInt(),
+        title: json["title"],
+        latitude: json["latitude"].toDouble(),
+        longitude: json["longitude"].toDouble(),
+        waiting: json["waiting"],
     );
 
-    Map<String, dynamic> toJson() => {
+    Map<String, dynamic> toMap() => {
         "_id": id,
-        "titulo": titulo,
-        "latitud": latitud,
-        "longitud": longitud,
-        "esperas": esperas,
+        "title": title,
+        "latitude": latitude,
+        "longitude": longitude,
+        "waiting": waiting,
     };
 }

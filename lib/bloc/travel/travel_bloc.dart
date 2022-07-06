@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/stop.dart';
+import 'package:user_app/commons/models/bus.dart';
+import 'package:user_app/commons/models/stop.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 

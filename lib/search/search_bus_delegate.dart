@@ -1,5 +1,5 @@
-import 'package:bustracking/bloc/buses/buses_bloc.dart';
-import 'package:bustracking/commons/models/bus.dart';
+import 'package:user_app/bloc/buses/buses_bloc.dart';
+import 'package:user_app/commons/models/bus.dart';
 
 import 'package:flutter/Material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,7 +26,7 @@ class BusSearch extends SearchDelegate<String> {
         itemBuilder: (context, i) {
           final bus = _filter[i];
           return ListTile(
-            title: Text(bus.titulo),
+            title: Text(bus.company),
             leading: Icon(
               Icons.directions_bus_rounded,
               color: Colors.black,
@@ -45,13 +45,13 @@ class BusSearch extends SearchDelegate<String> {
     return BlocBuilder<BusesBloc, BusesState>(builder: (context, state) {
       final buses = state.buses;
       _filter = buses.where((bus) {
-        return bus.titulo.toLowerCase().contains(query.trim().toLowerCase());
+        return bus.company.toLowerCase().contains(query.trim().toLowerCase());
       }).toList();
       return ListView.separated(
         itemCount: _filter.length,
         itemBuilder: (_, index) {
           return ListTile(
-            title: Text(_filter[index].titulo),
+            title: Text(_filter[index].company),
             onTap: () {
               close(context, _filter[index].id);
             },

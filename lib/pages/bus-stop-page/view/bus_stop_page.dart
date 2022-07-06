@@ -1,14 +1,14 @@
 // ignore_for_file: unnecessary_import
 
-import 'package:bustracking/bloc/buses/buses_bloc.dart';
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/commons/widgets/map.dart';
-import 'package:bustracking/pages/bus-stop-page/models/bus-stop-page-args.dart';
+import 'package:user_app/bloc/buses/buses_bloc.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/commons/models/bus.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/commons/widgets/map.dart';
+import 'package:user_app/pages/bus-stop-page/models/bus-stop-page-args.dart';
 
-import 'package:bustracking/pages/bus-stop-page/widgets/bus_widget.dart';
-import 'package:bustracking/commons/widgets/custom-appbar.dart';
+import 'package:user_app/pages/bus-stop-page/widgets/bus_widget.dart';
+import 'package:user_app/commons/widgets/custom-appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -75,7 +75,7 @@ class _BusStopPageState extends State<BusStopPage> {
     List<Bus> busesToAdd = busesBloc.state.buses;
 
     for (var singleBus in busesToAdd) {
-      if(singleBus.paradas.indexWhere((element) => element == stopId) >= 0 ){
+      if(singleBus.stops.indexWhere((element) => element == stopId) >= 0 ){
         buses.add(singleBus);
       }
 
@@ -170,8 +170,8 @@ class _BusStopPageState extends State<BusStopPage> {
                       itemBuilder: (context, index) {
                         final item = buses[index];
                         bool isComing = false;
-                        int prox = item.paradas.indexWhere((element) => element == item.proximaParada);
-                        int stopI = item.paradas.indexWhere((element) => element == stopId);
+                        int prox = item.stops.indexWhere((element) => element == item.nextStop);
+                        int stopI = item.stops.indexWhere((element) => element == stopId);
 
                         if ((stopI >= 0) && (stopI >= prox)) {
                           isComing = true;
@@ -201,8 +201,8 @@ class _BusStopPageState extends State<BusStopPage> {
   }
 
   calculateTime(Bus bus, String stopId, bool retrn){
-    int nextStopIndex = bus.paradas.indexWhere((element) => element == bus.proximaParada);
-    int stopIndex = bus.paradas.indexWhere((element) => element == stopId);
+    int nextStopIndex = bus.stops.indexWhere((element) => element == bus.nextStop);
+    int stopIndex = bus.stops.indexWhere((element) => element == stopId);
   
 
     int distance = 0;
@@ -211,24 +211,24 @@ class _BusStopPageState extends State<BusStopPage> {
     {
       
 
-      var stopA = stopById(bus.paradas[i]);
+      var stopA = stopById(bus.stops[i]);
       var stopB;
 
 
-      if((i + 1) > bus.paradas.indexWhere((element) => element == bus.paradas.last))
+      if((i + 1) > bus.stops.indexWhere((element) => element == bus.stops.last))
       {
-        stopB = stopById(bus.paradas[0]);
+        stopB = stopById(bus.stops[0]);
       }
-      if((i+1) <= bus.paradas.indexWhere((element) => element == bus.paradas.last)){
-        stopB = stopById(bus.paradas[i + 1]);
+      if((i+1) <= bus.stops.indexWhere((element) => element == bus.stops.last)){
+        stopB = stopById(bus.stops[i + 1]);
       }
 
-      LatLng stopALatLng = LatLng(stopA.latitud, stopA.longitud);
-      LatLng stopBLatLng = LatLng(stopB.latitud, stopB.longitud);
+      LatLng stopALatLng = LatLng(stopA.latitude, stopA.longitude);
+      LatLng stopBLatLng = LatLng(stopB.latitude, stopB.longitude);
 
       distance = distance + calculateDistance(stopALatLng, stopBLatLng);
 
-      if(i == bus.paradas.indexWhere((element) => element == bus.paradas.last))
+      if(i == bus.stops.indexWhere((element) => element == bus.stops.last))
       {
         i = 0; 
       }else

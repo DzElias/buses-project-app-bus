@@ -1,4 +1,4 @@
-import 'package:bustracking/pages/bus-stop-page/models/bus-stop-page-args.dart';
+import 'package:user_app/pages/bus-stop-page/models/bus-stop-page-args.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 

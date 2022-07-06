@@ -1,4 +1,4 @@
-name: bustracking
+name: user_app
 description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
@@ -49,7 +49,6 @@ dependencies:
   flutter_native_splash: ^2.1.1
   flutter_local_notifications: ^9.4.0
   fluttertoast: ^8.0.9
-  internet_connection_checker: ^0.0.1
   
 
 

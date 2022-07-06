@@ -1,6 +1,6 @@
-import 'package:bustracking/commons/widgets/custom-appbar.dart';
-import 'package:bustracking/pages/options-page/widgets/option_widget.dart';
-import 'package:bustracking/utils/get_options.dart';
+import 'package:user_app/commons/widgets/custom-appbar.dart';
+import 'package:user_app/pages/options-page/widgets/option_widget.dart';
+import 'package:user_app/utils/get_options.dart';
 import 'package:flutter/material.dart';
 
 import 'package:latlong2/latlong.dart';

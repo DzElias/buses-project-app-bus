@@ -1,17 +1,17 @@
-import 'package:bustracking/bloc/travel/travel_bloc.dart';
-import 'package:bustracking/bloc/buses/buses_bloc.dart';
-import 'package:bustracking/bloc/map/map_bloc.dart';
-import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/pages/bus-page/models/bus_page_arguments.dart';
-import 'package:bustracking/pages/bus-page/widgets/bus-route.dart';
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/commons/widgets/map.dart';
-import 'package:bustracking/commons/widgets/custom-appbar.dart';
-import 'package:bustracking/commons/widgets/panel_widget.dart';
-import 'package:bustracking/services/notification_service.dart';
-import 'package:bustracking/services/socket_service.dart';
+import 'package:user_app/bloc/travel/travel_bloc.dart';
+import 'package:user_app/bloc/buses/buses_bloc.dart';
+import 'package:user_app/bloc/map/map_bloc.dart';
+import 'package:user_app/bloc/my_location/my_location_bloc.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/pages/bus-page/models/bus_page_arguments.dart';
+import 'package:user_app/pages/bus-page/widgets/bus-route.dart';
+import 'package:user_app/commons/models/bus.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/commons/widgets/map.dart';
+import 'package:user_app/commons/widgets/custom-appbar.dart';
+import 'package:user_app/commons/widgets/panel_widget.dart';
+import 'package:user_app/services/notification_service.dart';
+import 'package:user_app/services/socket_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -54,7 +54,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as BusPageArguments;
 
-    final LatLng busStopLatLng = LatLng(args.stop.latitud, args.stop.longitud);
+    final LatLng busStopLatLng = LatLng(args.stop.latitude, args.stop.longitude);
     final String stopId = args.stop.id;
     final List<String> stopsSelected = args.stopsSelected;
     final destino = args.destino;
@@ -82,7 +82,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
                       BlocBuilder<BusesBloc, BusesState>(
                         builder: (context, state) {
                           var bus = state.buses[state.buses.indexWhere((element) => element.id == busID)];
-                          LatLng busLatLng = LatLng(bus.latitud, bus.longitud);
+                          LatLng busLatLng = LatLng(bus.latitude, bus.longitude);
 
                           return MapWidget(
                               selectedStops: stopsSelected,
@@ -175,7 +175,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
       builder: (context, state) {
         var bus = state
             .buses[state.buses.indexWhere((element) => element.id == busID)];
-        LatLng busLatLng = LatLng(bus.latitud, bus.longitud);
+        LatLng busLatLng = LatLng(bus.latitude, bus.longitude);
 
         if (calculateDistance(busLatLng, busStopLatLng) < 200) {
           NotificationService().showNotification(1, "Tu bus esta llegando!!",
@@ -265,7 +265,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
     final busesBloc = Provider.of<BusesBloc>(context, listen: false);
     var bus = busesBloc.state.buses[
         busesBloc.state.buses.indexWhere((element) => element.id == busID)];
-    LatLng busLatLng = LatLng(bus.latitud, bus.longitud);
+    LatLng busLatLng = LatLng(bus.latitude, bus.longitude);
 
     final mapBloc = Provider.of<MapBloc>(context, listen: false);
     animatedMapMove(busLatLng, 16, mapBloc.mapController2);
@@ -274,7 +274,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
       builder: (context, state) {
         var bus = state
             .buses[state.buses.indexWhere((element) => element.id == busID)];
-        LatLng busLatLng = LatLng(bus.latitud, bus.longitud);
+        LatLng busLatLng = LatLng(bus.latitude, bus.longitude);
 
         final mapBloc = Provider.of<MapBloc>(context, listen: false);
         MapController mapController = mapBloc.mapController2;
@@ -291,6 +291,11 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
             Provider.of<TravelBloc>(context, listen: false)
                 .add(OnDesTravelingEvent());
           }
+        }
+        final myLocationBloc =Provider.of<MyLocationBloc>(context, listen: false);
+        if(calculateDistance(busLatLng, myLocationBloc.state.location! ) > 50){
+          Provider.of<TravelBloc>(context, listen: false).add(OnDesTravelingEvent());
+          animatedMapMove(myLocationBloc.state.location!, 16, mapController);
         }
 
         if (destino.latitude == 0) {
@@ -351,8 +356,8 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
 
   
   calculateTime(Bus bus, String stopId, bool retrn){
-    int nextStopIndex = bus.paradas.indexWhere((element) => element == bus.proximaParada);
-    int stopIndex = bus.paradas.indexWhere((element) => element == stopId);
+    int nextStopIndex = bus.stops.indexWhere((element) => element == bus.nextStop);
+    int stopIndex = bus.stops.indexWhere((element) => element == stopId);
   
 
     int distance = 0;
@@ -361,24 +366,24 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
     {
       
 
-      var stopA = stopById(bus.paradas[i]);
+      var stopA = stopById(bus.stops[i]);
       var stopB;
 
 
-      if((i + 1) > bus.paradas.indexWhere((element) => element == bus.paradas.last))
+      if((i + 1) > bus.stops.indexWhere((element) => element == bus.stops.last))
       {
-        stopB = stopById(bus.paradas[0]);
+        stopB = stopById(bus.stops[0]);
       }
-      if((i+1) <= bus.paradas.indexWhere((element) => element == bus.paradas.last)){
-        stopB = stopById(bus.paradas[i + 1]);
+      if((i+1) <= bus.stops.indexWhere((element) => element == bus.stops.last)){
+        stopB = stopById(bus.stops[i + 1]);
       }
 
-      LatLng stopALatLng = LatLng(stopA.latitud, stopA.longitud);
+      LatLng stopALatLng = LatLng(stopA.latitude, stopA.longitude);
       LatLng stopBLatLng = LatLng(stopB.latitud, stopB.longitud);
 
       distance = distance + calculateDistance(stopALatLng, stopBLatLng);
 
-      if(i == bus.paradas.indexWhere((element) => element == bus.paradas.last))
+      if(i == bus.stops.indexWhere((element) => element == bus.stops.last))
       {
         i = 0; 
       }else
@@ -430,7 +435,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Linea ${bus.linea} - ${bus.titulo}',
+                  'Linea ${bus.line} - ${bus.company}',
                   style: TextStyle(
                       fontSize: 15,
                       color: Colors.black87,
@@ -459,11 +464,11 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
   }
 
   Widget slidingUpPanel(double panelHeightOpen, double panelHeightClosed, String stopId, Bus bus) {
-    List route = bus.paradas;
+    List route = bus.stops;
     bool onnOrOff = false;
     var paradas = route.map((stopID) {
 
-      if (stopID == bus.proximaParada) {
+      if (stopID == bus.nextStop) {
         onnOrOff = true;
       }
       Stop stop = stopById(stopID);
@@ -471,7 +476,7 @@ class _BusPageState extends State<BusPage> with TickerProviderStateMixin {
       List<int> time = calculateTime(bus, stop.id, true);
       return BusRoute(
           onn: onnOrOff,
-          directionName: stop.titulo,
+          directionName: stop.title,
           time: onnOrOff ? time : [-1]);
     }).toList();
     return SlidingUpPanel(

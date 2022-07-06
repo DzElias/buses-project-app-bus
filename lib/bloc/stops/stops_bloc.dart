@@ -1,19 +1,20 @@
 import 'package:bloc/bloc.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/services/stops_service.dart';
+import 'package:user_app/commons/models/stop.dart';
 import 'package:equatable/equatable.dart';
 
 part 'stops_event.dart';
 part 'stops_state.dart';
 
 class StopsBloc extends Bloc<StopsEvent, StopsState> {
-  StopService stopService;
-  StopsBloc({required this.stopService}) : super(StopsState()) {
+  StopsBloc() : super(StopsState()) {
     on<OnStopsFoundEvent>((event, emit) => emit(state.copyWith(stops: event.stops)));
   }
 
-  Future getStops() async {
-    final stops = await stopService.getStops();
+  loadStops(dynamic response) async {
+    List<Stop> stops = [];
+    for(var map in response){
+      Stop.fromMap(map);
+    }
     add(OnStopsFoundEvent(stops));
   }
 }

@@ -1,14 +1,14 @@
-import 'package:bustracking/bloc/buses/buses_bloc.dart';
-import 'package:bustracking/bloc/map/map_bloc.dart';
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
-import 'package:bustracking/commons/widgets/custom-appbar.dart';
+import 'package:user_app/bloc/buses/buses_bloc.dart';
+import 'package:user_app/bloc/map/map_bloc.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/commons/models/bus.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/commons/widgets/bus-stop-marker.dart';
+import 'package:user_app/commons/widgets/custom-appbar.dart';
 
-import 'package:bustracking/commons/widgets/main_drawer.dart';
-import 'package:bustracking/search/search_bus_delegate.dart';
-import 'package:bustracking/utils/cachedTileProvider.dart';
+import 'package:user_app/commons/widgets/main_drawer.dart';
+import 'package:user_app/search/search_bus_delegate.dart';
+import 'package:user_app/utils/cachedTileProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -146,7 +146,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
                       Text(
                         !track
                             ? '¿Que bus estas buscando?'
-                            : 'Linea ${busById(id).linea} ${busById(id).titulo} ',
+                            : 'Linea ${busById(id).line} ${busById(id).company} ',
                         style: TextStyle(
                           color: !track ? Colors.black45 : Colors.black54,
                         ),
@@ -173,7 +173,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
       markerList.add(Marker(
           width: 60,
           height: 60,
-          point: LatLng(bus.latitud, bus.longitud),
+          point: LatLng(bus.latitude, bus.longitude),
           key: Key(bus.id),
           builder: (_) => const Center(
                   child: Image(
@@ -192,7 +192,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
 
       Bus bus = buses[index];
 
-      var busLatLng = LatLng(bus.latitud, bus.longitud);
+      var busLatLng = LatLng(bus.latitude, bus.longitude);
 
       double zoom = mapController.zoom;
       if (zoom < 16) {
@@ -271,7 +271,7 @@ class _SearchBusState extends State<SearchBus> with TickerProviderStateMixin {
     List<Marker> _markerList = [];
 
     for(Stop stop in stops){
-      Marker marker = Marker(point: LatLng(stop.latitud, stop.longitud), height: 60.0, width: 60.0, builder: (_) => BusStopMarker());
+      Marker marker = Marker(point: LatLng(stop.latitude, stop.longitude), height: 60.0, width: 60.0, builder: (_) => BusStopMarker());
       _markerList.add(marker); 
     }
 

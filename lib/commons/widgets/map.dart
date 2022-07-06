@@ -1,12 +1,12 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:bustracking/bloc/map/map_bloc.dart';
-import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
-import 'package:bustracking/pages/bus-stop-page/models/walking_route.dart';
-import 'package:bustracking/utils/cachedTileProvider.dart';
+import 'package:user_app/bloc/map/map_bloc.dart';
+import 'package:user_app/bloc/my_location/my_location_bloc.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/commons/widgets/bus-stop-marker.dart';
+import 'package:user_app/pages/bus-stop-page/models/walking_route.dart';
+import 'package:user_app/utils/cachedTileProvider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -180,8 +180,7 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
                     Polyline(
                         strokeWidth: 3.0,
                         color: Colors.green,
-                        points: points
-                            .map((point) => LatLng(
+                        points: points.map((point) => LatLng(
                                 point.latitude / 10, point.longitude / 10))
                             .toList())
                   ])
@@ -273,7 +272,7 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
     final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
     final i = stopsBloc.state.stops.indexWhere((element) => element.id == stops[0]);
 
-    LatLng destino = LatLng(stopsBloc.state.stops[i].latitud, stopsBloc.state.stops[i].longitud);
+    LatLng destino = LatLng(stopsBloc.state.stops[i].latitude, stopsBloc.state.stops[i].longitude);
 
     var url ='${baseUrl}/mapbox/walking/${inicio!.longitude},${inicio.latitude};${destino.longitude},${destino.latitude}';
 
@@ -292,7 +291,7 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
     if(stops.length > 1)
     {
      final index = stopsBloc.state.stops.indexWhere((element) => element.id == stops[1]);
-     destino = LatLng(stopsBloc.state.stops[index].latitud, stopsBloc.state.stops[index].longitud);
+     destino = LatLng(stopsBloc.state.stops[index].latitude, stopsBloc.state.stops[index].longitude);
 
       url ='${baseUrl}/mapbox/walking/${destino.longitude},${destino.latitude};${destino2.longitude},${destino2.latitude}';
       _dio = new Dio();
@@ -374,7 +373,7 @@ class _MapState extends State<MapWidget> with TickerProviderStateMixin {
     _markerList.add(Marker(
           height: MARKER_SIZE_EXPANDED,
           width: MARKER_SIZE_EXPANDED,
-          point: LatLng(stop.latitud, stop.longitud),
+          point: LatLng(stop.latitude, stop.longitude),
           builder: (_) {
             return BusStopMarker(selected: _selected);
           }));

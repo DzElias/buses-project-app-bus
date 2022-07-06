@@ -1,18 +1,18 @@
 import 'dart:async';
 
-import 'package:bustracking/bloc/buses/buses_bloc.dart';
-import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
-import 'package:bustracking/bloc/search/search_bloc.dart';
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/bloc/travel/travel_bloc.dart';
-import 'package:bustracking/commons/widgets/main_drawer.dart';
-import 'package:bustracking/pages/bus-page/models/bus_page_arguments.dart';
-import 'package:bustracking/pages/nearby-bus-stop-page/widgets/manual_marker.dart';
-import 'package:bustracking/pages/nearby-bus-stop-page/widgets/nearby_bus_stops_map.dart';
+import 'package:user_app/bloc/buses/buses_bloc.dart';
+import 'package:user_app/bloc/my_location/my_location_bloc.dart';
+import 'package:user_app/bloc/search/search_bloc.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/bloc/travel/travel_bloc.dart';
+import 'package:user_app/commons/widgets/main_drawer.dart';
+import 'package:user_app/pages/bus-page/models/bus_page_arguments.dart';
+import 'package:user_app/pages/nearby-bus-stop-page/widgets/manual_marker.dart';
+import 'package:user_app/pages/nearby-bus-stop-page/widgets/nearby_bus_stops_map.dart';
 
-import 'package:bustracking/commons/widgets/custom-appbar.dart';
-import 'package:bustracking/pages/nearby-bus-stop-page/widgets/search_bar.dart';
-import 'package:bustracking/services/socket_service.dart';
+import 'package:user_app/commons/widgets/custom-appbar.dart';
+import 'package:user_app/pages/nearby-bus-stop-page/widgets/search_bar.dart';
+import 'package:user_app/services/socket_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -153,18 +153,16 @@ class _NearbyBusStopPageState extends State<NearbyBusStopPage>
     final locationBloc = Provider.of<MyLocationBloc>(context, listen: false);
     final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
     if(locationBloc.state.sw){
-      stopsBloc.state.stops.sort((a, b) => (calculateDistance(LatLng(a.latitud, a.longitud))).compareTo(calculateDistance(LatLng(b.latitud, b.longitud))));
+      stopsBloc.state.stops.sort((a, b) => (calculateDistance(LatLng(a.latitude, a.longitude))).compareTo(calculateDistance(LatLng(b.latitude, b.longitude))));
     }else{
     final busesBloc = Provider.of<BusesBloc>(context, listen: false);
-    busesBloc.getBuses();
-    
+    final socket = Provider.of<SocketService>(context, listen: false).socket;
 
-    stopsBloc.getStops();
-    final socketService = Provider.of<SocketService>(context, listen: false);
-
-    socketService.socket.connect();
-    socketService.socket.on('change-locationReturn', busesBloc.handleBusLocation);
-    socketService.socket.on('changeNextStopReturn', busesBloc.handleBusProxStop);
+    socket.connect();
+    socket.on('loadBuses', busesBloc.loadBuses);
+    socket.on('loadStops', stopsBloc.loadStops);
+    socket.on('change-locationReturn', busesBloc.handleBusLocation);
+    socket.on('changeNextStopReturn', busesBloc.handleBusProxStop);
 
     
 

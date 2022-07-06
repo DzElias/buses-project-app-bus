@@ -1,27 +1,25 @@
-import 'package:bustracking/bloc/travel/travel_bloc.dart';
-import 'package:bustracking/bloc/buses/buses_bloc.dart';
-import 'package:bustracking/bloc/map/map_bloc.dart';
-import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
-import 'package:bustracking/bloc/search/search_bloc.dart';
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/routes.dart';
-import 'package:bustracking/services/bus_service.dart';
-import 'package:bustracking/services/socket_service.dart';
-import 'package:bustracking/services/stops_service.dart';
-import 'package:bustracking/services/traffic_service.dart';
+import 'package:user_app/bloc/travel/travel_bloc.dart';
+import 'package:user_app/bloc/buses/buses_bloc.dart';
+import 'package:user_app/bloc/map/map_bloc.dart';
+import 'package:user_app/bloc/my_location/my_location_bloc.dart';
+import 'package:user_app/bloc/search/search_bloc.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/routes.dart';
+import 'package:user_app/services/socket_service.dart';
+import 'package:user_app/services/traffic_service.dart';
 
 import 'package:flutter/Material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
-class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+class App extends StatefulWidget {
+  const App({Key? key}) : super(key: key);
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<App> createState() => _AppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
@@ -40,8 +38,8 @@ class _MyAppState extends State<MyApp> {
           BlocProvider(create: (_) => MyLocationBloc()),
           BlocProvider(create: (_) => SearchBloc(trafficService: TrafficService())),
           BlocProvider(create: (_) => MapBloc()),
-          BlocProvider(create: (_) => StopsBloc(stopService: StopService())),
-          BlocProvider(create: (_) => BusesBloc(busService: BusService())),
+          BlocProvider(create: (_) => StopsBloc()),
+          BlocProvider(create: (_) => BusesBloc()),
           BlocProvider(create: (_) => TravelBloc()),
         ],
         child: Builder(builder: (context) {

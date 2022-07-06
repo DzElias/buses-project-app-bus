@@ -1,8 +1,8 @@
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/pages/bus-page/models/bus_page_arguments.dart';
-import 'package:bustracking/utils/get_options.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/commons/models/bus.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/pages/bus-page/models/bus_page_arguments.dart';
+import 'package:user_app/utils/get_options.dart';
 import 'package:flutter/Material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -38,8 +38,8 @@ class OptionWidget extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Linea ${option.bus.linea} ${option.bus.titulo}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87),),
-                    Text("Desde ${option.paradaA.titulo.replaceFirst("Parada", "")} hasta ${option.paradaB.titulo.replaceFirst("Parada", "")}", style: TextStyle(fontSize: 13),)
+                    Text("Linea ${option.bus.line} ${option.bus.company}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87),),
+                    Text("Desde ${option.paradaA.title.replaceFirst("Parada", "")} hasta ${option.paradaB.title.replaceFirst("Parada", "")}", style: TextStyle(fontSize: 13),)
                   ],
                 ),
                 Spacer(),
@@ -98,11 +98,11 @@ class OptionWidget extends StatelessWidget {
 
   travelTime(Stop paradaA, Stop paradaB, Bus bus, BuildContext context)
   {
-    LatLng pointA = LatLng(paradaA.latitud, paradaA.longitud);
-    LatLng pointB = LatLng(paradaB.latitud, paradaB.longitud);
+    LatLng pointA = LatLng(paradaA.latitude, paradaA.longitude);
+    LatLng pointB = LatLng(paradaB.latitude, paradaB.longitude);
 
-    int indexA = bus.paradas.indexWhere((element) => element == paradaA.id);
-    int indexB = bus.paradas.indexWhere((element) => element == paradaB.id);
+    int indexA = bus.stops.indexWhere((element) => element == paradaA.id);
+    int indexB = bus.stops.indexWhere((element) => element == paradaB.id);
 
     var stopsBloc = Provider.of<StopsBloc>(context, listen:false);
 
@@ -111,16 +111,16 @@ class OptionWidget extends StatelessWidget {
     if(indexA < indexB){
       for(int i = indexA; i<indexB; i++)
       {
-        int indexC = stopsBloc.state.stops.indexWhere((element) => element.id == bus.paradas[i]);
+        int indexC = stopsBloc.state.stops.indexWhere((element) => element.id == bus.stops[i]);
         Stop stopC = stopsBloc.state.stops[indexC];
 
-        int indexD = stopsBloc.state.stops.indexWhere((element) => element.id == bus.paradas[i + 1]);
+        int indexD = stopsBloc.state.stops.indexWhere((element) => element.id == bus.stops[i + 1]);
         Stop stopD = stopsBloc.state.stops[indexD];
 
-        distance = distance + calculateDistance(LatLng(stopC.latitud, stopC.longitud), LatLng(stopD.latitud, stopD.longitud));
+        distance = distance + calculateDistance(LatLng(stopC.latitude, stopC.longitude), LatLng(stopD.latitude, stopD.longitude));
       }
      
-      distance = distance + calculateDistance(LatLng(bus.latitud, bus.longitud),LatLng(paradaA.latitud, paradaA.longitud));
+      distance = distance + calculateDistance(LatLng(bus.latitude, bus.longitude),LatLng(paradaA.latitude, paradaA.longitude));
     }
     
 

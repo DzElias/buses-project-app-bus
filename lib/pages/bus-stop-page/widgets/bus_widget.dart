@@ -1,6 +1,6 @@
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/pages/bus-page/models/bus_page_arguments.dart';
+import 'package:user_app/commons/models/bus.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/pages/bus-page/models/bus_page_arguments.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -46,7 +46,7 @@ class BusWidget extends StatelessWidget {
                     SizedBox(
                       width: 10,
                     ),
-                    Text("Linea ${bus.linea} ${bus.titulo}",
+                    Text("Linea ${bus.line} ${bus.company}",
                         style: TextStyle(
                             fontFamily: 'Betm-Medium',
                             fontWeight: FontWeight.bold,

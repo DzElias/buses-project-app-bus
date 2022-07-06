@@ -1,6 +1,6 @@
-import 'package:bustracking/bloc/buses/buses_bloc.dart';
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/services/socket_service.dart';
+import 'package:user_app/bloc/buses/buses_bloc.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/services/socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,19 +32,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 
     if(serverStatus == ServerStatus.offline){ 
-      // Future.delayed(Duration(seconds: 2));
       isConnected = false;
       sw = true;
     };
     
     if(serverStatus == ServerStatus.online){ 
       isConnected = true; 
-      if(sw){
-        final busesBloc = Provider.of<BusesBloc>(context, listen: false);
-        busesBloc.getBuses();
-        final stopsBloc = Provider.of<StopsBloc>(context, listen: false);
-        stopsBloc.getStops();
-      }
     };
     return AppBar(
       title:isConnected? title : Text("No tienes conexion a internet"),

@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
-import 'package:socket_io_client/socket_io_client.dart' as iO;
+import 'package:socket_io_client/socket_io_client.dart';
 
 enum ServerStatus { online, offline, connecting }
 
 class SocketService with ChangeNotifier {
   ServerStatus _serverStatus = ServerStatus.connecting;
-  late iO.Socket _socket;
+  late Socket _socket;
 
   ServerStatus get serverStatus => _serverStatus;
 
-  iO.Socket get socket => _socket;
+  Socket get socket => _socket;
   Function get emit => _socket.emit;
 
   SocketService() {
@@ -17,19 +17,25 @@ class SocketService with ChangeNotifier {
   }
 
   void _initConfig() {
-    // Dart client
-    _socket = iO.io('https://pruebas-socket.herokuapp.com/', {
+    _socket = io('https://api-buses-project.herokuapp.com/', {
       'transports': ['websocket'],
       'autoConnect': false
     });
+    _socket = io(
+      'https://api-buses-project.herokuapp.com',
+      OptionBuilder().setTransports(['websocket'])
+          .setExtraHeaders({'foo': 'bar'})
+          .build());
 
-    _socket.on('connect', (_) {
+    _socket.onConnect((_) {
       if (kDebugMode) {
         print('cliente conectado');
       }
       _serverStatus = ServerStatus.online;
       notifyListeners();
     });
+
+    _socket.onConnectError((data) => print(data));
 
     _socket.on('disconnect', (_) {
       if (kDebugMode) {
@@ -39,5 +45,7 @@ class SocketService with ChangeNotifier {
 
       notifyListeners();
     });
+
+    
   }
 }

@@ -1,6 +1,6 @@
-import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
-import 'package:bustracking/bloc/search/search_bloc.dart';
-import 'package:bustracking/commons/models/search_destination_result.dart';
+import 'package:user_app/bloc/my_location/my_location_bloc.dart';
+import 'package:user_app/bloc/search/search_bloc.dart';
+import 'package:user_app/commons/models/search_destination_result.dart';
 import 'package:flutter/Material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';

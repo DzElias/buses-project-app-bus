@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:bustracking/commons/models/places_response.dart';
-import 'package:bustracking/services/traffic_service.dart';
+import 'package:user_app/commons/models/places_response.dart';
+import 'package:user_app/services/traffic_service.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 

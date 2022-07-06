@@ -2,8 +2,8 @@
 // In this example, create a class that contains both
 // a customizable title and message.
 
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/stop.dart';
+import 'package:user_app/commons/models/bus.dart';
+import 'package:user_app/commons/models/stop.dart';
 import 'package:latlong2/latlong.dart';
 
 class BusPageArguments {

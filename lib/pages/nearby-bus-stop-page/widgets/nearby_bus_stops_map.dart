@@ -1,15 +1,15 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:bustracking/bloc/buses/buses_bloc.dart';
-import 'package:bustracking/bloc/map/map_bloc.dart';
-import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
-import 'package:bustracking/bloc/search/search_bloc.dart';
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/commons/widgets/bus-stop-marker.dart';
-import 'package:bustracking/commons/widgets/my-location-marker.dart';
-import 'package:bustracking/pages/nearby-bus-stop-page/widgets/stop_details.dart';
-import 'package:bustracking/utils/cachedTileProvider.dart';
+import 'package:user_app/bloc/buses/buses_bloc.dart';
+import 'package:user_app/bloc/map/map_bloc.dart';
+import 'package:user_app/bloc/my_location/my_location_bloc.dart';
+import 'package:user_app/bloc/search/search_bloc.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/commons/widgets/bus-stop-marker.dart';
+import 'package:user_app/commons/widgets/my-location-marker.dart';
+import 'package:user_app/pages/nearby-bus-stop-page/widgets/stop_details.dart';
+import 'package:user_app/utils/cachedTileProvider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -93,8 +93,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                       minZoom: 5,
                       zoom: 16,
                       maxZoom: 18,
-                      interactiveFlags:
-                          InteractiveFlag.all & ~InteractiveFlag.rotate),
+                      interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate),
                   layers: [
                     TileLayerOptions(
                         urlTemplate:
@@ -136,7 +135,7 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
 
                     if(!reloadMarkers){
                       reloadMarkers = true;
-                      stops.sort((a, b) => (calculateDistance(LatLng(a.latitud, a.longitud))).compareTo(calculateDistance(LatLng(b.latitud, b.longitud))));
+                      stops.sort((a, b) => (calculateDistance(LatLng(a.latitude, a.longitude))).compareTo(calculateDistance(LatLng(b.latitude, b.longitude))));
                       createBusStopsMarkers(stops);
                     }
 
@@ -229,16 +228,16 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
                       int menDistance = 100000;
                       for (int i = 0; i < busStops.length; i++) {
                         final _item = busStops[i];
-                        if (calculateDistance(LatLng(_item.latitud, _item.longitud)) < menDistance) {
-                          menDistance = calculateDistance(LatLng(_item.latitud, _item.longitud));
+                        if (calculateDistance(LatLng(_item.latitude, _item.longitude)) < menDistance) {
+                          menDistance = calculateDistance(LatLng(_item.latitude, _item.longitude));
                           nearestStopIndex = i;
                         }
                       }
                       return StopDetails(
                           busStop: item,
                           isNearest: i == nearestStopIndex,
-                          distanceInMeters: calculateDistance(LatLng(item.latitud, item.longitud)),
-                          time: calculateTime(LatLng(item.latitud, item.longitud)));
+                          distanceInMeters: calculateDistance(LatLng(item.latitude, item.longitude)),
+                          time: calculateTime(LatLng(item.latitude, item.longitude)));
                     }),
               )
             : SizedBox());
@@ -254,14 +253,14 @@ class _NearbyBusStopsMapState extends State<NearbyBusStopsMap>
       _markerList.add(Marker(
           height: MARKER_SIZE_EXPANDED,
           width: MARKER_SIZE_EXPANDED,
-          point: LatLng(stop.latitud, stop.longitud),
+          point: LatLng(stop.latitude, stop.longitude),
           builder: (_) {
             return GestureDetector(
                 onTap: () async {
                   _selectedIndex = i;
                   MapController mapController =
                       BlocProvider.of<MapBloc>(context).mapController;
-                  animatedMapMove(LatLng(stop.latitud, stop.longitud), mapController.zoom);
+                  animatedMapMove(LatLng(stop.latitude, stop.longitude), mapController.zoom);
                   busStops.isNotEmpty? setState(() {
                     _pageController.animateToPage(i,
                         duration: Duration(milliseconds: 300),

@@ -33,10 +33,6 @@ class MyLocationBloc extends Bloc<MyLocationEvent, MyLocationState> {
       final newLocation = LatLng(position.latitude, position.longitude);
       add( OnLocationChange(newLocation) );
     });
-
-    
-
-
   }
 
   void cancelFollowing(){

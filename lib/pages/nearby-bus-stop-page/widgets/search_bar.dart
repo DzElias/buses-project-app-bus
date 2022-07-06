@@ -1,13 +1,13 @@
-import 'package:bustracking/bloc/buses/buses_bloc.dart';
-import 'package:bustracking/bloc/my_location/my_location_bloc.dart';
-import 'package:bustracking/bloc/search/search_bloc.dart';
-import 'package:bustracking/bloc/stops/stops_bloc.dart';
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/commons/models/search_destination_result.dart';
-import 'package:bustracking/pages/options-page/view/options_page.dart';
-import 'package:bustracking/search/search_destination.dart';
-import 'package:bustracking/utils/get_options.dart';
+import 'package:user_app/bloc/buses/buses_bloc.dart';
+import 'package:user_app/bloc/my_location/my_location_bloc.dart';
+import 'package:user_app/bloc/search/search_bloc.dart';
+import 'package:user_app/bloc/stops/stops_bloc.dart';
+import 'package:user_app/commons/models/bus.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/commons/models/search_destination_result.dart';
+import 'package:user_app/pages/options-page/view/options_page.dart';
+import 'package:user_app/search/search_destination.dart';
+import 'package:user_app/utils/get_options.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:latlong2/latlong.dart';
 

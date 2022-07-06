@@ -1,6 +1,6 @@
-import 'package:bustracking/commons/models/bus.dart';
-import 'package:bustracking/commons/models/stop.dart';
-import 'package:bustracking/commons/models/places_response.dart';
+import 'package:user_app/commons/models/bus.dart';
+import 'package:user_app/commons/models/stop.dart';
+import 'package:user_app/commons/models/places_response.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -82,7 +82,7 @@ class DestinationService {
 
     for(Bus bus in buses)
     {
-      if( _itsComing(stop, bus, bus.proximaParada) )
+      if( _itsComing(stop, bus, bus.nextStop) )
       {
         busesArriving.add(bus);
       }
@@ -97,14 +97,14 @@ class DestinationService {
   bool _itsComing( Stop stop1, Bus bus, String stop2ID )
   {
 
-    int index = bus.paradas.indexWhere((element) => element == stop2ID);
+    int index = bus.stops.indexWhere((element) => element == stop2ID);
 
     if(index >= 0)
     {
 
-      for(int i = index; i<bus.paradas.length; i++)
+      for(int i = index; i<bus.stops.length; i++)
       {
-        if(bus.paradas[i] == stop1.id)
+        if(bus.stops[i] == stop1.id)
         {
           return true;
         }
@@ -123,7 +123,7 @@ class DestinationService {
     for (Stop stop in stops) 
     {
 
-      LatLng stopLocation = LatLng(stop.latitud, stop.longitud);
+      LatLng stopLocation = LatLng(stop.latitude, stop.longitude);
 
       if(_calculateDistance(point, stopLocation) < 250)
       {

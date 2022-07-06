@@ -1,4 +1,4 @@
-import 'package:bustracking/services/places_interceptor.dart';
+import 'package:user_app/services/places_interceptor.dart';
 import 'package:dio/dio.dart';
 
 import '../commons/models/places_response.dart';
@@ -6,8 +6,7 @@ import 'package:latlong2/latlong.dart';
 
 class TrafficService {
   final Dio _dioPlaces;
-  final String _basePlacesUrl =
-      'https://api.mapbox.com/geocoding/v5/mapbox.places';
+  final String _basePlacesUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
 
   TrafficService() : _dioPlaces = Dio()..interceptors.add(PlacesInterceptor());
 
