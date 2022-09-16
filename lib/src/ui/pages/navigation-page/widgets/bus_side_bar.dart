@@ -37,7 +37,7 @@ class _BusSideBarState extends State<BusSideBar> {
                 }
             return Container(
               padding:
-                  const EdgeInsets.only(top: 40, left: 0, right: 0, bottom: 0),
+                  EdgeInsets.only(top: height*0.065, left: 0, right: 0, bottom: 0),
               height: height,
               width: MediaQuery.of(context).size.width * .32,
               decoration: BoxDecoration(
@@ -124,34 +124,35 @@ class _BusSideBarState extends State<BusSideBar> {
       if(stop.id == nextStop){
         onnOrOff = true;
       }
+    double height = MediaQuery.of(context).size.height;
       
       return Container(
-        padding: const EdgeInsets.only(top: 35),
+        padding: EdgeInsets.only(top: height*0.02),
         child: Row(
           children: [
-            Container(
-              width: 100,
-              child: Text((time[0] != -1)? time[1] != 0? "${getTime(time[0], time[1], context )}": TimeOfDay.now().add(minute: 1).format(context) : "Ya paso",
-                  style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(
-              width: 15,
-            ),
+            // Container(
+            //   width: 100,
+            //   child: Text((time[0] != -1)? time[1] != 0? "${getTime(time[0], time[1], context )}": TimeOfDay.now().add(minute: 1).format(context) : "Ya paso",
+            //       style: TextStyle(
+            //           color: Colors.black54,
+            //           fontSize: 20,
+            //           fontWeight: FontWeight.bold)),
+            // ),
+            // const SizedBox(
+            //   width: 15,
+            // ),
             Icon(
               Icons.circle,
               color: (onnOrOff&&isActive) ? Colors.deepPurpleAccent : Colors.grey,
-              size: 25,
+              size: height*0.03,
             ),
-            const SizedBox(
-              width: 15,
+            SizedBox(
+              width: height*0.02,
             ),
             Text(stop.title,
                 style: TextStyle(
                     color: (onnOrOff&&isActive) ? Colors.black87 : Colors.black54,
-                    fontSize: 20,
+                    fontSize: height*0.04,
                     fontWeight: FontWeight.bold)),
           ],
         ),
@@ -198,6 +199,7 @@ class BusRouteStatePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
     return BlocBuilder<BusBloc, BusState>(
       builder: (context, bustate) {
         return BlocBuilder<StopBloc, StopState>(
@@ -211,7 +213,7 @@ class BusRouteStatePanel extends StatelessWidget {
 
             return Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: height*0.03,),
               margin: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                   color: color,
@@ -223,45 +225,45 @@ class BusRouteStatePanel extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(children: [
-                    const Icon(Icons.directions_bus, color: Colors.white),
+                    Icon(Icons.directions_bus, color: Colors.white, size: height*0.05),
                     const SizedBox(
                       width: 10,
                     ),
                     Text('Linea ${bus.line} - ${bus.company}',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: height*0.030,
                             fontWeight: FontWeight.w500))
                   ]),
-                  const SizedBox(
-                    height: 20,
+                  SizedBox(
+                    height: height*0.04,
                   ),
                   Row(
                     children: [
-                      const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                      Icon(Icons.arrow_forward_ios, color: Colors.white, size: height*0.05),
                       const SizedBox(
                         width: 10,
                       ),
                       Text('Sgte Parada | ${nextStop.title}',
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: Colors.white,
-                              fontSize: 17,
+                              fontSize: height*0.030,
                               fontWeight: FontWeight.w500))
                     ],
                   ),
-                  const SizedBox(
-                    height: 20,
+                  SizedBox(
+                    height: height*0.04,
                   ),
                   Row(
                     children: [
-                      const Icon(Icons.groups, color: Colors.white),
+                      Icon(Icons.groups, color: Colors.white, size: height*0.05),
                       const SizedBox(
                         width: 10,
                       ),
                       Text('Esperando | ${nextStop.waiting.toString()}',
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: Colors.white,
-                              fontSize: 17,
+                              fontSize: height*0.030,
                               fontWeight: FontWeight.w500))
                     ],
                   ),

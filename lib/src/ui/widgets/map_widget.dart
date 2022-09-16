@@ -167,33 +167,33 @@ class _MapWidgetState extends State<MapWidget> with TickerProviderStateMixin{
                   ),
                 ),
 
-                Positioned(
-                  bottom: 0,
-                  right: 10,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: const  BorderRadius.only(
-                        topLeft: Radius.circular(10), 
-                        topRight: Radius.circular(10)
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 5.0,
-                          offset: Offset(0, 0),
-                          color: Colors.deepPurpleAccent.shade400
-                        ),
-                      ],
-                    ),                    
-                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                // Positioned(
+                //   bottom: 0,
+                //   right: 10,
+                //   child: Container(
+                //     decoration: BoxDecoration(
+                //       color: Colors.white,
+                //       borderRadius: const  BorderRadius.only(
+                //         topLeft: Radius.circular(10), 
+                //         topRight: Radius.circular(10)
+                //       ),
+                //       boxShadow: [
+                //         BoxShadow(
+                //           blurRadius: 5.0,
+                //           offset: Offset(0, 0),
+                //           color: Colors.deepPurpleAccent.shade400
+                //         ),
+                //       ],
+                //     ),                    
+                //     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
 
-                    child: Text(_timeString, style: TextStyle(
-                      color: Colors.deepPurpleAccent.shade400,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500
-                    ))
-                  ),
-                )
+                //     child: Text(_timeString, style: TextStyle(
+                //       color: Colors.deepPurpleAccent.shade400,
+                //       fontSize: 20,
+                //       fontWeight: FontWeight.w500
+                //     ))
+                //   ),
+                // )
               ],
             ),
           );

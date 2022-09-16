@@ -38,6 +38,7 @@ class App extends StatelessWidget {
     SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
     ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
 
     return MultiProvider(
       providers: [
