@@ -18,7 +18,7 @@ class SocketService with ChangeNotifier {
 
   void _initConfig() {
     // Dart client
-    _socket = IO.io('https://api-buses-project.herokuapp.com/', {
+    _socket = IO.io('https://api-buses.onrender.com/', {
       'transports': ['websocket'],
       'autoConnect': false
     });
@@ -41,7 +41,5 @@ class SocketService with ChangeNotifier {
 
       notifyListeners();
     });
-
-    
   }
 }

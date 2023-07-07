@@ -30,6 +30,7 @@ dependencies:
   fluttertoast: ^8.0.8
   intl: ^0.17.0
   flutter_background: ^1.1.0
+  file: ^6.1.4
 
 dev_dependencies:
   flutter_test:

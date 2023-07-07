@@ -10,14 +10,23 @@ part 'bus_travel_state.dart';
 class BusTravelBloc extends Bloc<BusTravelEvent, BusTravelState> {
   BusTravelBloc() : super(BusIsNotTravelingState()) {
     on<InitTravelEvent>((event, emit) {
+      Provider.of<SocketService>(event.context, listen: false)
+          .socket
+          .emit('busOnWay', [event.busId]);
       emit(BusIsTravelingState());
     });
-    on<EndTravelEvent>((event, emit){
+    on<EndTravelEvent>((event, emit) {
+      Provider.of<SocketService>(event.context, listen: false)
+          .socket
+          .emit('busOffWay', [event.busId]);
       emit(BusIsNotTravelingState());
     });
-    on<ChangeNextStopEvent>((event, emit){
-      var socket = Provider.of<SocketService>(event.context, listen: false).socket;
-      socket.emit('change-nextStop', [[event.busId, event.nextStopId]]);
+    on<ChangeNextStopEvent>((event, emit) {
+      var socket =
+          Provider.of<SocketService>(event.context, listen: false).socket;
+      socket.emit('change-nextStop', [
+        [event.busId, event.nextStopId]
+      ]);
     });
   }
 }

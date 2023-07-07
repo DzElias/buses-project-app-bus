@@ -15,8 +15,8 @@ void main() async {
   
 
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await FlutterBackground.initialize(androidConfig: androidConfig);
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await FlutterBackground.enableBackgroundExecution();
   runApp(const App());
   

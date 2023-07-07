@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -17,85 +18,127 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   TextEditingController textController = TextEditingController();
+  TextEditingController passController = TextEditingController();
   bool sw = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-
-            CustomInput(
-              icon: Icons.directions_bus, 
-              placeHolder: 'ID del bus', 
-              textController: textController,
-              isPassword: true,
+        backgroundColor: Colors.white,
+        body: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CustomInput(
+                  icon: Icons.badge,
+                  placeHolder: 'Numero de cedula',
+                  textController: textController,
+                  isPassword: false,
+                ),
+                CustomInput(
+                  icon: Icons.lock,
+                  placeHolder: 'Contraseña',
+                  textController: passController,
+                  isPassword: true,
+                ),
+                CustomButton(
+                  text: 'INGRESAR',
+                  onPressed: sw
+                      ? null
+                      : () {
+                          setState(() {
+                            sw = true;
+                          });
+                          onSubmit(textController.text.trim(),
+                              passController.text.trim());
+                        },
+                  btnColor: Colors.deepPurpleAccent.shade400,
+                  textColor: Colors.white,
+                )
+              ],
             ),
-
-            CustomButton(
-              text: 'INGRESAR', 
-              onPressed: sw ? null :() {
-                setState(() {
-                  sw = true;
-                });
-                onSubmit(textController.text.trim());
-              },
-              btnColor: Colors.blue, 
-              textColor: Colors.white,
-
-            )
-          ],
-        ),
-      )
-    );
+          ),
+        ));
   }
 
-  onSubmit(String text){
-    if(text != null){
-      Bus? bus = getBusById(text);
-      if(bus != null){
-       saveBusId(bus);
-      }
-    }else{
-      Fluttertoast.showToast(
-        msg: 'El ID ingresado es invalido',
-        textColor: Colors.white,
-        backgroundColor: const Color(0xff606060)
-      );
+  onSubmit(String ci, String pass) async {
+    if (ci.isEmpty || pass.isEmpty) {
       setState(() {
         sw = false;
       });
 
       textController.clear();
-                        
+      return Fluttertoast.showToast(
+          msg: 'Credenciales invalidas',
+          textColor: Colors.white,
+          backgroundColor: const Color(0xff606060));
     }
-    
+
+    Dio dio = Dio();
+    try {
+      dio.options.headers['content-Type'] = 'application/json';
+      print(pass);
+      Response response = await dio
+          .post("https://api-buses.onrender.com/api/auth/signin", data: {
+        "ci": ci,
+        "password": pass,
+      });
+
+      if (response.data['busId'] != null) {
+        saveToken(response.data['busId'], response.data['token']);
+      }
+    } catch (e) {
+      setState(() {
+        sw = false;
+      });
+
+      textController.clear();
+      passController.clear();
+      print(e);
+      Fluttertoast.showToast(
+          msg: 'Credenciales invalidas',
+          textColor: Colors.white,
+          backgroundColor: const Color(0xff606060));
+    }
   }
 
-  Bus? getBusById(String busId){
+  saveToken(String busId, String token) async {
+    const storage = FlutterSecureStorage();
+    await storage.write(key: "token", value: token);
+
+    Bus? bus = getBusById(busId);
+    if (bus != null) {
+      Future.delayed(Duration.zero).then((value) => Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => NavigationPage(
+                    bus: bus,
+                  ))));
+    } else {
+      setState(() {
+        sw = false;
+      });
+
+      textController.clear();
+      passController.clear();
+      Fluttertoast.showToast(
+          msg: 'Ocurrio un error al iniciar sesion',
+          textColor: Colors.white,
+          backgroundColor: const Color(0xff606060));
+    }
+  }
+
+  Bus? getBusById(String busId) {
     final busBlocState = Provider.of<BusBloc>(context, listen: false).state;
-    if(busBlocState is BusesLoadedState){
+    if (busBlocState is BusesLoadedState) {
       List<Bus> buses = busBlocState.buses;
       int i = buses.indexWhere((element) => element.id == busId);
-      if(i>=0){
+      if (i >= 0) {
         return buses[i];
       }
     }
-  
+
     return null;
   }
-
-  saveBusId(Bus bus) async {
-    const storage = FlutterSecureStorage();
-    await storage.write(key: "busId", value: bus.id);
-
-    Future.delayed(Duration.zero).then((value) => Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => NavigationPage(bus: bus,))
-    ));
-  }
 }
-
